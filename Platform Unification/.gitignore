@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Auth / session data
+auth/sso-session/
+auth/storageState.json
+tests/auth/
+.user-data/
+tmp-explore-bio/
+
+# Test artifacts
+test-results/
+playwright-report/
+extent-report/
+extent-report-history/
+OldReports/
+audit-screenshots/
+screenshots/
+advisory-diag.log
+advisory-debug-total-forms.json
+advisory-snapshot-dump.json
+advisory-structure-explore.json
+test-diag-output.txt
+debug-*.png
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.cursor/
+
+# Misc generated
+directory_tree.txt
+New Report.html
+explore-page.js
+ssoTest.js

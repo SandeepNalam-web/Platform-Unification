@@ -1,0 +1,19 @@
+{
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
+  },
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "nodemailer": "^8.0.2",
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "test": "npx playwright test && npx playwright show-report --export=combined-report.html",
+    "preclear": "node -e \"import fs from 'fs'; const d='auth/sso-session'; fs.rmSync(d,{recursive:true,force:true}); fs.mkdirSync(d,{recursive:true}); console.log('Session cleared');\"",
+    "test:chatai": "npm run preclear && npx playwright test tests/ui/00-Login.spec.js tests/ui/06-PlatformSD.spec.js tests/ui/07-KnowledgeManager.spec.js tests/ui/08-SmartConversionAdvisory.spec.js --reporter=list,./reporters/extent-reporter.js",
+    "test:voiceai": "npm run preclear && npx playwright test tests/ui/00-Login.spec.js tests/ui/05-Platform.spec.js --reporter=list,./reporters/extent-reporter.js",
+    "test:ci": "npx playwright test --reporter=list,./reporters/extent-reporter.js",
+    "playwright:install": "node node_modules/@playwright/test/cli.js install"
+  }
+}
