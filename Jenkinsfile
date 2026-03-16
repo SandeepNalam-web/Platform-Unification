@@ -45,6 +45,7 @@ pipeline {
                 dir('Platform Unification') {
                     script {
                         printColored('Installing dependencies', "\u001B[34m")
+                        sh 'mkdir -p auth && echo "{}" > auth/storageState.json'
                         sh 'npm ci'
                         sh 'npx playwright install chromium'
                         printColored('Dependencies installed', "\u001B[32m")

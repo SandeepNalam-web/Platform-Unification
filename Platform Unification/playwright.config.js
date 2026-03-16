@@ -1,9 +1,12 @@
 // playwright.config.js
 import { defineConfig, devices } from '@playwright/test';
+import fs from 'fs';
+
+const storageStatePath = './auth/storageState.json';
 
 export default defineConfig({
   use: {
-  storageState: './auth/storageState.json',
+  storageState: fs.existsSync(storageStatePath) ? storageStatePath : undefined,
   baseURL: 'https://platform.interface.ai',
     screenshot: 'on',       // always save screenshot after each test
     trace: 'retain-on-failure',
