@@ -46,7 +46,7 @@ pipeline {
                 script {
                     printColored('Loading secrets from AWS Secrets Manager', "\u001B[34m")
                     def secretJson = sh(
-                        script: "aws secretsmanager get-secret-value --secret-id ${SECRET_NAME} --region ${AWS_REGION} --query SecretString --output text",
+                        script: "aws secretsmanager get-secret-value --secret-id ${SECRET_NAME} --region ${AWS_REGION} --query SecretString --output text --profile prod",
                         returnStdout: true
                     ).trim()
                     def secrets = readJSON text: secretJson
