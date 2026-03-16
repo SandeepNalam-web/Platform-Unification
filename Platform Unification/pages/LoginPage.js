@@ -6,7 +6,7 @@ import { activateInbox, getMessages, pollForOtp, deleteInbox, LOGIN_EMAIL } from
 class LoginPage{
 
 constructor(page){  
-const dataFile = path.resolve('./data/TestData.xlsx');
+const dataFile = path.resolve('./data/testData.xlsx');
 const testData = getTestData(dataFile);
  
 

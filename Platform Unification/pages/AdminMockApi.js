@@ -7,7 +7,7 @@ import { getTestData } from '../utils/excelReader.js';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const dataFile = path.resolve('./data/TestData.xlsx');
+const dataFile = path.resolve('./data/testData.xlsx');
 const testData = getTestData(dataFile);
 const CU_NAME = (testData.Cuname || 'platformv5').toString().trim();
 const ENV_NAME = (testData.Env || 'dev').toString().trim().toLowerCase();

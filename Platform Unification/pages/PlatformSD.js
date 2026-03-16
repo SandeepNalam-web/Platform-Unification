@@ -7,7 +7,7 @@ import { callWidgetMockApi } from "./AdminMockApi.js";
 
 class PlatformSD{
     constructor(page){  
-        const dataFile = path.resolve('./data/TestData.xlsx');
+        const dataFile = path.resolve('./data/testData.xlsx');
         const testData = getTestData(dataFile);
 
         this.CUname = testData.Cuname;

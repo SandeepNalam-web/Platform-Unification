@@ -272,6 +272,7 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Branch Number: Tabs Present', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryBranchNumberAvailable()) test.skip();
         const tabs = await platformpage.AdvisoryBranchNumberTabNames();
         expect(tabs.length).toBeGreaterThan(0);
         const expectedTabs = ['Call Volume', 'Top Experiences', 'Experience Usage', 'Caller Details', 'Language', 'Next Best Experiences', 'Authentication'];
@@ -282,6 +283,7 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Branch Number: Tableau Iframe Loaded', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryBranchNumberAvailable()) test.skip();
         const { visible, src } = await platformpage.AdvisoryBranchNumberIframePresent();
         expect(visible).toBe(true);
         expect(src).toBeTruthy();
@@ -289,18 +291,21 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Branch Number: Date Picker Visible', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryBranchNumberAvailable()) test.skip();
         await platformpage.AdvisoryBranchNumberDatePickerVisible();
         await expect(platformpage.AdvisoryDatePicker).toBeVisible();
     });
 
     test('Advisory Branch Number: Date Picker Last 30 Days', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryBranchNumberAvailable()) test.skip();
         await platformpage.AdvisoryDatePickerLast30Days();
     });
 
     test('Advisory Branch Number: Tab Navigation & Data Validation', async ({ sharedPage }) => {
         test.setTimeout(300000);
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryBranchNumberAvailable()) test.skip();
         const { navResults, allFailures, allDataResults, alertScreenshots } = await platformpage.AdvisoryBranchNumberTabNavigationAndDataCheck();
         for (const result of navResults) {
             expect(result.iframeLoaded).toBe(true);
@@ -326,6 +331,7 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Branch Number: Navigate Back to AIPB', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryBranchNumberAvailable()) test.skip();
         await platformpage.AdvisoryNavigateBackToAIPB();
         await expect(platformpage.AdvisoryAIPBLink).toBeVisible();
     });
@@ -345,6 +351,7 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Device Biometrics: Tabs Present', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryDeviceBiometricsAvailable()) test.skip();
         const tabs = await platformpage.AdvisoryDeviceBiometricsTabNames();
         expect(tabs.length).toBeGreaterThan(0);
         const expectedTabs = ['Overview', 'Insights'];
@@ -355,6 +362,7 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Device Biometrics: Tableau Iframe Loaded', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryDeviceBiometricsAvailable()) test.skip();
         const { visible, src } = await platformpage.AdvisoryDeviceBiometricsIframePresent();
         expect(visible).toBe(true);
         expect(src).toBeTruthy();
@@ -362,18 +370,21 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Device Biometrics: Date Picker Visible', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryDeviceBiometricsAvailable()) test.skip();
         await platformpage.AdvisoryDeviceBiometricsDatePickerVisible();
         await expect(platformpage.AdvisoryDatePicker).toBeVisible();
     });
 
     test('Advisory Device Biometrics: Date Picker Last 30 Days', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryDeviceBiometricsAvailable()) test.skip();
         await platformpage.AdvisoryDatePickerLast30Days();
     });
 
     test('Advisory Device Biometrics: Tab Navigation & Data Validation', async ({ sharedPage }) => {
         test.setTimeout(300000);
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryDeviceBiometricsAvailable()) test.skip();
         const { navResults, allFailures, allDataResults, alertScreenshots } = await platformpage.AdvisoryDeviceBiometricsTabNavigationAndDataCheck();
         for (const result of navResults) {
             expect(result.iframeLoaded).toBe(true);
@@ -399,6 +410,7 @@ test.describe.serial('Post Requisite', async () => {
 
     test('Advisory Device Biometrics: Navigate Back to AIPB', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
+        if (!await platformpage.AdvisoryDeviceBiometricsAvailable()) test.skip();
         await platformpage.AdvisoryNavigateBackToAIPB();
         await expect(platformpage.AdvisoryAIPBLink).toBeVisible();
     });

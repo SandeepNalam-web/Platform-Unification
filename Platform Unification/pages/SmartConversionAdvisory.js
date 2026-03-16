@@ -6,7 +6,7 @@ import LoginPage from './LoginPage.js';
 class SmartConversionAdvisory {
 
     constructor(page) {
-        const dataFile = path.resolve('./data/TestData.xlsx');
+        const dataFile = path.resolve('./data/testData.xlsx');
         const testData = getTestData(dataFile);
 
         this.CUname = (process.env.CUNAME || testData.Cuname || '').toString().trim();

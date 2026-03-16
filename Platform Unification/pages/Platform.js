@@ -7,7 +7,7 @@ import { callAdminMockApi } from "./AdminMockApi.js";
 
 class Platform{
     constructor(page){  
-        const dataFile = path.resolve('./data/TestData.xlsx'); // adjust path
+        const dataFile = path.resolve('./data/testData.xlsx');
         const testData = getTestData(dataFile);
 
 this.CUname = testData.Cuname ;
@@ -252,10 +252,8 @@ async EventManagerforPreviousDateDisabled(){
     await this.HolidayDateRange.click();
 }
 async EventManagerNewEventCreation(){
-    await this.goToLandingAndSelectAIPB();
-    await this.EventManager.click();
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForTimeout(2000);
+    await this.CancelEventButton.click().catch(() => {});
+    await this.page.waitForTimeout(1000);
 
     // Clean up any leftover "Test Event Manager" from a previous run
     const searchBox = this.page.getByPlaceholder("Enter name or message");
