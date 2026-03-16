@@ -31,7 +31,6 @@ pipeline {
         NODE_TLS_REJECT_UNAUTHORIZED = '0'
         CI                           = 'true'
         AWS_REGION                   = 'us-west-2'
-        SECRET_NAME                  = 'interface/platform-unification'
     }
 
     options {
@@ -41,25 +40,6 @@ pipeline {
     }
 
     stages {
-        stage('Load Secrets') {
-            steps {
-                script {
-                    printColored('Loading secrets from AWS Secrets Manager', "\u001B[34m")
-                    def secretJson = sh(
-                        script: "aws secretsmanager get-secret-value --secret-id ${SECRET_NAME} --region ${AWS_REGION} --query SecretString --output text --profile prod",
-                        returnStdout: true
-                    ).trim()
-                    def secrets = readJSON text: secretJson
-                    env.SMTP_HOST = secrets.SMTP_HOST
-                    env.SMTP_PORT = secrets.SMTP_PORT
-                    env.SMTP_USER = secrets.SMTP_USER
-                    env.SMTP_PASS = secrets.SMTP_PASS
-                    env.SMTP_FROM = secrets.SMTP_FROM
-                    printColored('Secrets loaded', "\u001B[32m")
-                }
-            }
-        }
-
         stage('Install') {
             steps {
                 dir('Platform Unification') {
@@ -140,7 +120,7 @@ pipeline {
                     def recipients = params.EMAIL_RECIPIENTS.trim().split(',').collect { it.trim() }.join(',')
 
                     sh """
-                        aws ses send-email --region us-west-2 \
+                        aws ses send-email --region us-west-2 --profile interface \
                             --from 'no-reply@interface.ai' \
                             --destination "ToAddresses=${recipients}" \
                             --message "Subject={Data='${subject}',Charset=utf8},Body={Html={Data='${body.replace("'", "\\'")}',Charset=utf8}}"

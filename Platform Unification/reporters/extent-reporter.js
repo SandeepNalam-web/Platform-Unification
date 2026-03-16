@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import { createTransport } from 'nodemailer';
 
 const isCI = !!process.env.CI;
@@ -137,16 +137,9 @@ class ExtentReporter {
   }
 
   async _sendReportEmail(reportPath, recipients) {
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
-    const smtpFrom = process.env.SMTP_FROM || smtpUser || 'noreply@automation.com';
-
-    if (!smtpHost) {
-      console.log('[ExtentReporter] SMTP_HOST not set — skipping email. Report saved at:', reportPath);
-      return;
-    }
+    const sesFrom = 'no-reply@interface.ai';
+    const sesRegion = 'us-west-2';
+    const sesProfile = 'interface';
 
     const total = this.tests.length;
     const passed = this.tests.filter(t => t.status === 'passed').length;
@@ -221,20 +214,11 @@ class ExtentReporter {
     `.trim();
 
     try {
-      const transportOpts = {
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-      };
-      if (smtpUser && smtpPass) {
-        transportOpts.auth = { user: smtpUser, pass: smtpPass };
-      }
-
-      const transporter = createTransport(transportOpts);
+      const transporter = createTransport({ streamTransport: true });
       const reportContent = fs.readFileSync(reportPath, 'utf-8');
 
-      await transporter.sendMail({
-        from: smtpFrom,
+      const info = await transporter.sendMail({
+        from: sesFrom,
         to: recipients,
         subject,
         html: emailBody,
@@ -243,9 +227,20 @@ class ExtentReporter {
         ],
       });
 
-      console.log(`[ExtentReporter] Report emailed to: ${recipients}`);
+      const rawMessage = info.message.toString('base64');
+      const tmpFile = '/tmp/ses-raw-email.b64';
+      fs.writeFileSync(tmpFile, rawMessage);
+
+      execSync(
+        `aws ses send-raw-email --region ${sesRegion} --profile ${sesProfile} ` +
+        `--raw-message Data=$(cat ${tmpFile})`,
+        { stdio: ['pipe', 'pipe', 'pipe'] }
+      );
+
+      fs.unlinkSync(tmpFile);
+      console.log(`[ExtentReporter] Report emailed via SES to: ${recipients}`);
     } catch (err) {
-      console.error('[ExtentReporter] Failed to send email:', err.message);
+      console.error('[ExtentReporter] Failed to send email via SES:', err.message);
     }
   }
 
