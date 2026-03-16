@@ -214,7 +214,7 @@ class ExtentReporter {
     `.trim();
 
     try {
-      const transporter = createTransport({ streamTransport: true });
+      const transporter = createTransport({ streamTransport: true, buffer: true });
       const reportContent = fs.readFileSync(reportPath, 'utf-8');
 
       const info = await transporter.sendMail({
@@ -227,13 +227,12 @@ class ExtentReporter {
         ],
       });
 
-      const rawMessage = info.message.toString('base64');
-      const tmpFile = '/tmp/ses-raw-email.b64';
-      fs.writeFileSync(tmpFile, rawMessage);
+      const tmpFile = '/tmp/ses-raw-email.eml';
+      fs.writeFileSync(tmpFile, info.message);
 
       execSync(
         `aws ses send-raw-email --region ${sesRegion} --profile ${sesProfile} ` +
-        `--raw-message Data=$(cat ${tmpFile})`,
+        `--raw-message Data=fileb://${tmpFile}`,
         { stdio: ['pipe', 'pipe', 'pipe'] }
       );
 
