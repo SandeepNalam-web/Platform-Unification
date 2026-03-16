@@ -101,36 +101,6 @@ pipeline {
             dir('Platform Unification') {
                 archiveArtifacts artifacts: 'test-results/**,playwright-report/**,extent-report/**', allowEmptyArchive: true
             }
-
-            script {
-                if (params.EMAIL_RECIPIENTS?.trim()) {
-                    def subject = "${currentBuild.currentResult}: Platform Unification - ${params.Cuname ?: 'default'} / ${params.TEST_ENV ?: 'default'} (${params.TEST_SCOPE})"
-                    def htmlBody = "<h2>Platform Unification Test Report</h2>" +
-                        "<table style='border-collapse:collapse;font-family:sans-serif;'>" +
-                        "<tr><td style='padding:4px 12px;font-weight:bold;'>Status</td><td style='padding:4px 12px;'>${currentBuild.currentResult}</td></tr>" +
-                        "<tr><td style='padding:4px 12px;font-weight:bold;'>CU Name</td><td style='padding:4px 12px;'>${params.Cuname ?: '(from testData.xlsx)'}</td></tr>" +
-                        "<tr><td style='padding:4px 12px;font-weight:bold;'>Environment</td><td style='padding:4px 12px;'>${params.TEST_ENV ?: '(from testData.xlsx)'}</td></tr>" +
-                        "<tr><td style='padding:4px 12px;font-weight:bold;'>Scope</td><td style='padding:4px 12px;'>${params.TEST_SCOPE}</td></tr>" +
-                        "<tr><td style='padding:4px 12px;font-weight:bold;'>Branch</td><td style='padding:4px 12px;'>${params.BRANCH}</td></tr>" +
-                        "<tr><td style='padding:4px 12px;font-weight:bold;'>Build</td><td style='padding:4px 12px;'><a href='${BUILD_URL}'>${BUILD_URL}</a></td></tr>" +
-                        "</table>" +
-                        "<p>View the full report and artifacts on <a href='${BUILD_URL}artifact/'>Jenkins</a>.</p>"
-
-                    def recipientsList = params.EMAIL_RECIPIENTS.trim().split(',').collect { '"' + it.trim() + '"' }.join(',')
-
-                    def safeSubject = subject.replace('"', '\\"')
-                    def safeBody = htmlBody.replace('"', '\\"')
-
-                    def emailJson = '{"Source":"no-reply@interface.ai",' +
-                        '"Destination":{"ToAddresses":[' + recipientsList + ']},' +
-                        '"Message":{"Subject":{"Data":"' + safeSubject + '","Charset":"UTF-8"},' +
-                        '"Body":{"Html":{"Data":"' + safeBody + '","Charset":"UTF-8"}}}}'
-
-                    writeFile file: '/tmp/ses-email.json', text: emailJson
-                    sh 'aws ses send-email --region us-west-2 --profile interface --cli-input-json file:///tmp/ses-email.json'
-                    printColored("Report emailed via SES to: ${params.EMAIL_RECIPIENTS}", "\u001B[32m")
-                }
-            }
         }
         success {
             script {
