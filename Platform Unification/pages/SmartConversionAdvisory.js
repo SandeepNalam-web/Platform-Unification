@@ -9,7 +9,7 @@ class SmartConversionAdvisory {
         const dataFile = path.resolve('./data/testData.xlsx');
         const testData = getTestData(dataFile);
 
-        this.CUname = (process.env.CUNAME || testData.Cuname || '').toString().trim();
+        this.CUname = (process.env.PU_CUNAME || testData.Cuname || '').toString().trim();
         this.Envname = (process.env.ENVNAME || testData.Env || '').toString().trim();
         this.page = page;
 

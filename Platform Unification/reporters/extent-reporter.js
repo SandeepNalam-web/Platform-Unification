@@ -109,9 +109,9 @@ class ExtentReporter {
     }
 
     const html = this._generateHTML();
-    const cuName = process.env.CUNAME || 'default';
+    const cuName = process.env.PU_CUNAME || 'default';
     const envName = process.env.ENVNAME || 'default';
-    console.log(`[ExtentReporter] CUNAME="${process.env.CUNAME}" ENVNAME="${process.env.ENVNAME}" → report: ${cuName}/${envName}`);
+    console.log(`[ExtentReporter] PU_CUNAME="${process.env.PU_CUNAME}" ENVNAME="${process.env.ENVNAME}" → report: ${cuName}/${envName}`);
     const timestamp = this.startTime.toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const reportFileName = `Platform_Unification_${cuName}_${envName}_${timestamp}.html`;
     const reportPath = path.join(reportDir, reportFileName);
@@ -150,7 +150,7 @@ class ExtentReporter {
     const passed = this.tests.filter(t => t.status === 'passed').length;
     const failed = this.tests.filter(t => t.status === 'failed').length;
     const skipped = this.tests.filter(t => t.status === 'skipped').length;
-    const cuName = process.env.CUNAME || 'N/A';
+    const cuName = process.env.PU_CUNAME || 'N/A';
     const envName = process.env.ENVNAME || 'N/A';
     const durationMs = (this.endTime - this.startTime) || 0;
     const durationStr = durationMs < 60000

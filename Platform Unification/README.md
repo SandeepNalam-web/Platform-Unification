@@ -124,10 +124,10 @@ You can override Excel values using environment variables without modifying the 
 
 ```bash
 # PowerShell
-$env:CUNAME="MyBank"; $env:ENVNAME="QA"; npm run test:chatai
+$env:PU_CUNAME="MyBank"; $env:ENVNAME="QA"; npm run test:chatai
 
 # Bash / macOS / Linux
-CUNAME="MyBank" ENVNAME="QA" npm run test:chatai
+PU_CUNAME="MyBank" ENVNAME="QA" npm run test:chatai
 ```
 
 ---
@@ -139,7 +139,7 @@ CUNAME="MyBank" ENVNAME="QA" npm run test:chatai
 | Variable | Source | Required | Description |
 |---|---|---|---|
 | `CI` | Jenkins (auto-set) | Auto | Enables headless mode, skips browser-open, enables email |
-| `CUNAME` | Jenkins UI parameter | Yes | Credit Union name |
+| `PU_CUNAME` | Jenkins UI parameter | Yes | Credit Union name |
 | `ENVNAME` | Jenkins UI parameter | Yes | Environment name |
 | `REPORT_EMAIL` | Jenkins UI parameter | Yes | Comma-separated email recipients for the report |
 | `SMTP_HOST` | Jenkins credentials | For email | SMTP server hostname |
@@ -155,7 +155,7 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'CUNAME',       defaultValue: '', description: 'Credit Union name')
+        string(name: 'PU_CUNAME',    defaultValue: '', description: 'Credit Union name')
         string(name: 'ENVNAME',      defaultValue: '', description: 'Environment name')
         string(name: 'REPORT_EMAIL', defaultValue: '', description: 'Email to send the report to')
     }
@@ -183,7 +183,7 @@ pipeline {
             steps {
                 dir('Platform Unification') {
                     sh """
-                        CUNAME="${params.CUNAME}" \
+                        PU_CUNAME="${params.PU_CUNAME}" \
                         ENVNAME="${params.ENVNAME}" \
                         REPORT_EMAIL="${params.REPORT_EMAIL}" \
                         npm run test:ci
@@ -221,7 +221,7 @@ Test data is read from `data/testData.xlsx` by default. The Excel file has key-v
 | `CuHeader` | CU header display name |
 | `Departmentname` | Department name for settings tests |
 
-All values can be overridden via environment variables (`CUNAME`, `ENVNAME`, `CUHEADER`, `DEPARTMENTNAME`).
+All values can be overridden via environment variables (`PU_CUNAME`, `ENVNAME`, `CUHEADER`, `DEPARTMENTNAME`).
 
 ---
 
