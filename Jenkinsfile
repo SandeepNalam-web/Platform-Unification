@@ -59,16 +59,24 @@ pipeline {
                 dir('Platform Unification') {
                     script {
                         printColored("Running Playwright tests (scope: ${params.TEST_SCOPE})", "\u001B[34m")
+                        println("[DEBUG] params.Cuname='${params.Cuname}' params.TEST_ENV='${params.TEST_ENV}'")
+
+                        def cuVal  = params.Cuname  ?: ''
+                        def envVal = params.TEST_ENV ?: ''
 
                         def envVars = [
-                            "CUNAME=${params.Cuname}",
-                            "ENVNAME=${params.TEST_ENV}",
-                            "CUHEADER=${params.CuHeader}",
-                            "DEPARTMENTNAME=${params.Departmentname}",
-                            "REPORT_EMAIL=${params.EMAIL_RECIPIENTS}",
+                            "CUNAME=${cuVal}",
+                            "ENVNAME=${envVal}",
+                            "CUHEADER=${params.CuHeader ?: ''}",
+                            "DEPARTMENTNAME=${params.Departmentname ?: ''}",
+                            "REPORT_EMAIL=${params.EMAIL_RECIPIENTS ?: ''}",
                         ]
 
+                        println("[DEBUG] envVars=${envVars}")
+
                         withEnv(envVars) {
+                            sh 'echo "[DEBUG-SH] CUNAME=$CUNAME ENVNAME=$ENVNAME"'
+
                             def cmd
                             switch (params.TEST_SCOPE) {
                                 case 'chatai':
