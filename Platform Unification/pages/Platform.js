@@ -17,7 +17,7 @@ this.baseURL= "https://platform.interface.ai/login";
 this.CuHeaderName= testData.CuHeader;
 
 //Buttons
-this.AIPBSelection = this.page.locator(`//div[h2[text()="Voice AI"]]/following-sibling::div//p[text()="${this.Envname}"]`);
+this.AIPBSelection = this.page.locator(`//div[h2[text()="Voice AI"]]/following-sibling::div//p[translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="${this.Envname.toLowerCase()}"]`);
 this.APT = this.page.locator("//div[@class='AppSelectBlock_appSelectBlockTitle__2AFfr']//h2[text()='APT']");
 this.Automation = this.page.locator("//div[@class='AppSelectBlock_appSelectBlockTitle__2AFfr']//h2[text()='Automation']");
 this.EventManager = this.page.locator("//div[@class='AppSelectBlock_appSelectBlockTitle__2AFfr']//h2[text()='Event Manager']");

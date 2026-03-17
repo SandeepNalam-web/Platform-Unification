@@ -15,7 +15,7 @@ class SmartConversionAdvisory {
 
         // Landing → Chat AI env selection
         this.ChatAIEnvSelection = this.page.locator(
-            `//div[h2[text()="Chat AI"]]/following-sibling::div//p[text()="${this.Envname}"]`
+            `//div[h2[text()="Chat AI"]]/following-sibling::div//p[translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="${this.Envname.toLowerCase()}"]`
         );
 
         // App-select page → Advisory card
