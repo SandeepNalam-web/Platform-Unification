@@ -259,6 +259,16 @@ class ExtentReporter {
     }
   }
 
+  _screenshotToDataUri(fileName) {
+    const ssDir = path.resolve('extent-report', 'screenshots');
+    const filePath = path.join(ssDir, fileName);
+    if (fs.existsSync(filePath)) {
+      const base64 = fs.readFileSync(filePath).toString('base64');
+      return `data:image/png;base64,${base64}`;
+    }
+    return `screenshots/${fileName}`;
+  }
+
   _generateHTML() {
     const total = this.tests.length;
     const passed = this.tests.filter(t => t.status === 'passed').length;
@@ -391,7 +401,7 @@ class ExtentReporter {
             testsHTML += `<details class="screenshot-dropdown" style="margin-top:8px">
                 <summary class="screenshot-summary" style="color:var(--warn)"><svg class="chevron-icon" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> ${this._esc(as.name)}</summary>
                 <div class="screenshot-wrapper">
-                  <img src="screenshots/${as.fileName}" alt="${this._esc(as.name)}" onclick="openModal(this.src)" />
+                  <img src="${this._screenshotToDataUri(as.fileName)}" alt="${this._esc(as.name)}" onclick="openModal(this.src)" />
                 </div>
               </details>`;
           }
@@ -415,7 +425,7 @@ class ExtentReporter {
           testsHTML += `<details class="screenshot-dropdown">
               <summary class="screenshot-summary"><svg class="chevron-icon" width="12" height="12" viewBox="0 0 12 12"><path d="M4 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Final Screenshot</summary>
               <div class="screenshot-wrapper">
-                <img src="screenshots/${finalSS.fileName}" alt="Final Screenshot" onclick="openModal(this.src)" />
+                <img src="${this._screenshotToDataUri(finalSS.fileName)}" alt="Final Screenshot" onclick="openModal(this.src)" />
               </div>
             </details>`;
         }
