@@ -111,6 +111,7 @@ class ExtentReporter {
     const html = this._generateHTML();
     const cuName = process.env.CUNAME || 'default';
     const envName = process.env.ENVNAME || 'default';
+    console.log(`[ExtentReporter] CUNAME="${process.env.CUNAME}" ENVNAME="${process.env.ENVNAME}" → report: ${cuName}/${envName}`);
     const timestamp = this.startTime.toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const reportFileName = `Platform_Unification_${cuName}_${envName}_${timestamp}.html`;
     const reportPath = path.join(reportDir, reportFileName);
