@@ -80,48 +80,46 @@ class SmartConversionAdvisory {
     }
 
     async goToLandingAndSelectAdvisory() {
-        for (let attempt = 1; attempt <= 2; attempt++) {
-            const url = this.page.url();
-            if (!url.includes('/landing') && !url.includes('/select')) {
-                await this.page.goto('https://platform.interface.ai/landing');
-                await this.page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
-                await this.page.waitForTimeout(2000);
-            }
-
-            const visible = await this.ChatAIEnvSelection.isVisible().catch(() => false);
-            if (visible) {
-                await this.ChatAIEnvSelection.click();
-                await this.page.waitForLoadState('domcontentloaded');
-                await this.page.waitForTimeout(2000);
-                await this.AdvisoryCard.waitFor({ state: 'visible', timeout: 30000 });
-                await this.AdvisoryCard.click();
-                await this.page.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
-                await this.page.waitForTimeout(3000);
-                return;
-            }
-
-            if (attempt === 1) {
-                console.log(`[Advisory] Env "${this.Envname}" not visible — reloading and re-selecting CU "${this.CUname}"…`);
-                await this.page.goto('https://platform.interface.ai/landing');
-                await this.page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
-                await this.page.waitForTimeout(2000);
-
-                await this.page.getByPlaceholder('Search Workspace').fill(this.CUname);
-                const cuItem = this.page.locator('.CuItem_cuListItemIconWrapper__1zIvu p');
-                await cuItem.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
-                const count = await cuItem.count();
-                for (let i = 0; i < count; i++) {
-                    const name = (await cuItem.nth(i).innerText()).trim();
-                    if (name.toLowerCase() === this.CUname.toLowerCase()) {
-                        await cuItem.nth(i).click();
-                        await this.page.waitForTimeout(3000);
-                        break;
-                    }
-                }
-            }
+        const url = this.page.url();
+        if (!url.includes('/landing') && !url.includes('/select')) {
+            await this.page.goto('https://platform.interface.ai/landing');
+            await this.page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
+            await this.page.waitForTimeout(2000);
         }
 
-        throw new Error(`Chat AI environment "${this.Envname}" not found on landing page for CU "${this.CUname}" after retry`);
+        try {
+            await this.ChatAIEnvSelection.waitFor({ state: 'visible', timeout: 30000 });
+        } catch {
+            console.log(`[Advisory] Env "${this.Envname}" not visible — reloading and re-selecting CU "${this.CUname}"…`);
+            await this.page.goto('https://platform.interface.ai/landing');
+            await this.page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
+            await this.page.waitForTimeout(2000);
+
+            await this.page.getByPlaceholder('Search Workspace').fill(this.CUname);
+            const cuItem = this.page.locator('.CuItem_cuListItemIconWrapper__1zIvu p');
+            await cuItem.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+            const count = await cuItem.count();
+            for (let i = 0; i < count; i++) {
+                const name = (await cuItem.nth(i).innerText()).trim();
+                if (name.toLowerCase() === this.CUname.toLowerCase()) {
+                    await cuItem.nth(i).click();
+                    await this.page.waitForTimeout(3000);
+                    break;
+                }
+            }
+
+            await this.ChatAIEnvSelection.waitFor({ state: 'visible', timeout: 30000 }).catch(() => {
+                throw new Error(`Chat AI environment "${this.Envname}" not found for CU "${this.CUname}" after retry`);
+            });
+        }
+
+        await this.ChatAIEnvSelection.click();
+        await this.page.waitForLoadState('domcontentloaded');
+        await this.page.waitForTimeout(2000);
+        await this.AdvisoryCard.waitFor({ state: 'visible', timeout: 30000 });
+        await this.AdvisoryCard.click();
+        await this.page.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
+        await this.page.waitForTimeout(3000);
     }
 
     async getSidebarDashboards() {
