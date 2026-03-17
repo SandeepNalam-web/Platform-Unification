@@ -1,7 +1,7 @@
 import test, { expect } from "@playwright/test";
 import { getTestData } from "../utils/excelReader";
 import path from 'path';
-import { activateInbox, getMessages, pollForOtp, deleteInbox, LOGIN_EMAIL } from './InboxesApi.js';
+import { fetchOtp, LOGIN_EMAIL } from './InboxesApi.js';
 
 class LoginPage{
 
@@ -124,11 +124,6 @@ async DeleteDepartment(){
 async loginWithEmailOtp() {
     const email = LOGIN_EMAIL;
 
-    console.log(`[LoginOTP] Activating inbox for ${email}`);
-    await activateInbox(email).catch(e =>
-        console.log(`[LoginOTP] Activate note: ${e.message}`)
-    );
-
     console.log('[LoginOTP] Navigating to login page');
     await this.page.goto(this.baseURL);
     await this.page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
@@ -138,12 +133,8 @@ async loginWithEmailOtp() {
     await this.EmailInput.fill(email);
     console.log(`[LoginOTP] Entered email: ${email}`);
 
-    const beforeMsgs = await getMessages(email).catch(() => []);
-    const seenUids = new Set(Array.isArray(beforeMsgs) ? beforeMsgs.map(m => m.uid) : []);
-    console.log(`[LoginOTP] Baseline: ${seenUids.size} existing messages`);
-
     await this.ContinueBtn.click();
-    console.log('[LoginOTP] Clicked Continue, waiting for OTP page…');
+    console.log('[LoginOTP] Clicked Continue, waiting for OTP…');
 
     await this.page.waitForTimeout(2000);
 
@@ -152,7 +143,7 @@ async loginWithEmailOtp() {
         throw new Error(`Email "${email}" is not registered on the platform`);
     }
 
-    const { otp, subject } = await pollForOtp(email, 60000, 5000, seenUids);
+    const { otp, subject } = await fetchOtp(email);
     console.log(`[LoginOTP] OTP: ${otp} (subject: "${subject}")`);
 
     await this.page.waitForTimeout(1000);
@@ -180,8 +171,6 @@ async loginWithEmailOtp() {
 
     await this.page.waitForURL('**/landing', { timeout: 60000 });
     console.log('[LoginOTP] Login successful — on landing page');
-
-    await deleteInbox(email).catch(() => {});
 }
 
 }

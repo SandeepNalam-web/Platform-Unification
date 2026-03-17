@@ -1,79 +1,59 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const RAPID_API_KEY = 'e0b2269f59msh1e9d25f2ee5c4d2p1038e9jsn4067765c8bc8';
-const RAPID_API_HOST = 'inboxes-com.p.rapidapi.com';
-const API_BASE = `https://${RAPID_API_HOST}`;
+const INBOX_API = 'https://inboxes.com/api/v2/inbox';
 const LOGIN_EMAIL = 'testadmin@getairmail.com';
 
-async function apiRequest(method, endpoint) {
-  const url = `${API_BASE}${endpoint}`;
-  const res = await fetch(url, {
-    method,
-    headers: {
-      'X-RapidAPI-Key': RAPID_API_KEY,
-      'X-RapidAPI-Host': RAPID_API_HOST,
-    },
-  });
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`Inboxes API ${method} ${endpoint} → ${res.status}: ${body}`);
-  }
-  return res.json();
-}
+/**
+ * Fetches the latest OTP from the inbox with a single API call.
+ * GET https://inboxes.com/api/v2/inbox/{email}
+ *
+ * Filters for messages from "interface.ai" and extracts the 6-digit
+ * OTP from the subject field (s).
+ */
+export async function fetchOtp(email = LOGIN_EMAIL, waitMs = 10000) {
+  await new Promise(r => setTimeout(r, waitMs));
 
-export async function activateInbox(email = LOGIN_EMAIL) {
-  return apiRequest('POST', `/inboxes/${encodeURIComponent(email)}`);
-}
-
-export async function getMessages(email = LOGIN_EMAIL) {
-  return apiRequest('GET', `/inboxes/${encodeURIComponent(email)}`);
-}
-
-export async function getMessage(messageId) {
-  return apiRequest('GET', `/messages/${encodeURIComponent(messageId)}`);
-}
-
-export async function deleteInbox(email = LOGIN_EMAIL) {
-  return apiRequest('DELETE', `/inboxes/${encodeURIComponent(email)}`);
-}
-
-function extractOtp(text) {
-  const m = text.match(/\b(\d{6})\b/);
-  return m ? m[1] : null;
-}
-
-export async function pollForOtp(email = LOGIN_EMAIL, timeoutMs = 60000, intervalMs = 5000, existingUids = null) {
-  const deadline = Date.now() + timeoutMs;
-  const maxPolls = Math.ceil(timeoutMs / intervalMs);
-
-  let seen;
-  if (existingUids) {
-    seen = existingUids instanceof Set ? existingUids : new Set(existingUids);
-  } else {
-    const existing = await getMessages(email).catch(() => []);
-    seen = new Set(Array.isArray(existing) ? existing.map(m => m.uid) : []);
-  }
-
-  for (let i = 1; i <= maxPolls && Date.now() < deadline; i++) {
-    await new Promise(r => setTimeout(r, intervalMs));
-
-    const msgs = await getMessages(email).catch(() => []);
-    if (!Array.isArray(msgs)) continue;
-
-    for (const m of msgs.filter(m => !seen.has(m.uid))) {
-      const full = await getMessage(m.uid).catch(() => null);
-      if (!full) continue;
-      const otp = extractOtp(full.text || '') || extractOtp(full.html || '') || extractOtp(full.subject || '');
-      if (otp) {
-        console.log(`[InboxesApi] OTP ${otp} from "${full.subject}"`);
-        return { otp, messageId: m.uid, subject: full.subject || '' };
-      }
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch(`${INBOX_API}/${encodeURIComponent(email)}`);
+    if (!res.ok) {
+      console.log(`[InboxesApi] Attempt ${attempt}/3 — API returned ${res.status}, retrying in 5s…`);
+      await new Promise(r => setTimeout(r, 5000));
+      continue;
     }
-    console.log(`[InboxesApi] Poll ${i}/${maxPolls} — waiting…`);
+
+    const data = await res.json();
+    const msgs = data.msgs || [];
+
+    const MAX_AGE_MS = 2 * 60 * 1000;
+    const now = Date.now();
+
+    const latest = msgs.find(m => {
+      if (!m.f || !m.f.toLowerCase().includes('interface.ai')) return false;
+      if (!m.cr) return false;
+      const ageMs = now - new Date(m.cr).getTime();
+      return ageMs <= MAX_AGE_MS;
+    });
+
+    if (!latest) {
+      console.log(`[InboxesApi] Attempt ${attempt}/3 — no recent message from interface.ai (rr: ${msgs[0]?.rr || 'N/A'}), retrying in 5s…`);
+      await new Promise(r => setTimeout(r, 5000));
+      continue;
+    }
+
+    const otpMatch = (latest.s || '').match(/\b(\d{6})\b/);
+    if (otpMatch) {
+      const otp = otpMatch[1];
+      console.log(`[InboxesApi] OTP ${otp} from subject: "${latest.s}" (${latest.rr})`);
+      return { otp, subject: latest.s };
+    }
+
+    console.log(`[InboxesApi] Attempt ${attempt}/3 — no 6-digit OTP in subject "${latest.s}" (${latest.rr}), retrying in 5s…`);
+    await new Promise(r => setTimeout(r, 5000));
   }
-  throw new Error(`No OTP at ${email} within ${timeoutMs / 1000}s`);
+
+  throw new Error(`No OTP found at ${email} after waiting`);
 }
 
 export { LOGIN_EMAIL };
 
-export default { activateInbox, getMessages, getMessage, deleteInbox, pollForOtp, LOGIN_EMAIL };
+export default { fetchOtp, LOGIN_EMAIL };
