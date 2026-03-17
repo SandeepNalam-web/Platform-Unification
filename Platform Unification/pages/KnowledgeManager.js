@@ -14,9 +14,9 @@ class KnowledgeManager {
 
         // Constants
         this.CreatedDirectoryName = "Automation Test Directory";
-        this.UploadedFileName = "QA_file.pdf";
-        this.RenamedFileName = "Renamed_QA_file";
-        this.RevertFileName = "QA_file";
+        this.UploadedFileName = "QA_File.pdf";
+        this.RenamedFileName = "Renamed_QA_File";
+        this.RevertFileName = "QA_File";
         this.TestAcronym = "Z";
         this.TestAcronymFullForm = "zebra zone";
         this.UpdatedAcronymTag = "zenith";
