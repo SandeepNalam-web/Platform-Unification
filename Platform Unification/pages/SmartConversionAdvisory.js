@@ -87,7 +87,11 @@ class SmartConversionAdvisory {
             await this.page.waitForTimeout(2000);
         }
 
-        await this.ChatAIEnvSelection.waitFor({ state: 'visible', timeout: 30000 });
+        try {
+            await this.ChatAIEnvSelection.waitFor({ state: 'visible', timeout: 30000 });
+        } catch {
+            throw new Error(`Chat AI environment "${this.Envname}" not found on landing page for CU "${this.CUname}"`);
+        }
         await this.ChatAIEnvSelection.click();
         await this.page.waitForLoadState('domcontentloaded');
         await this.page.waitForTimeout(2000);

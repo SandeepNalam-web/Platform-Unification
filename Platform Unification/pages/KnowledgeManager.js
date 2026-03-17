@@ -173,7 +173,7 @@ class KnowledgeManager {
 
     async uploadFile() {
         await this.AddDocumentsBtn.click();
-        await this.FileInput.setInputFiles('data/QA_file.pdf');
+        await this.FileInput.setInputFiles('data/QA_File.pdf');
         await this.UploadBtn.click();
     }
 

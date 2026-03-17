@@ -209,12 +209,18 @@ class ExtentReporter {
         attachments,
       });
 
-      const tmpFile = '/tmp/ses-raw-email.eml';
-      fs.writeFileSync(tmpFile, info.message);
+      const rawBase64 = info.message.toString('base64');
+      const cliInput = JSON.stringify({
+        Source: sesFrom,
+        Destinations: recipients.split(',').map(e => e.trim()),
+        RawMessage: { Data: rawBase64 }
+      });
+      const tmpFile = '/tmp/ses-raw-input.json';
+      fs.writeFileSync(tmpFile, cliInput);
 
       execSync(
         `aws ses send-raw-email --region ${sesRegion} --profile ${sesProfile} ` +
-        `--raw-message Data=fileb://${tmpFile}`,
+        `--cli-input-json file://${tmpFile}`,
         { stdio: ['pipe', 'pipe', 'pipe'] }
       );
 
