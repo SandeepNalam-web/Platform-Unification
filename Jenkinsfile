@@ -66,8 +66,8 @@ pipeline {
                         def envVars = [
                             "PU_CUNAME=${cuVal}",
                             "ENVNAME=${envVal}",
-                            "CUHEADER=${params.CuHeader ?: ''}",
-                            "DEPARTMENTNAME=${params.Departmentname ?: ''}",
+                            "PU_CUHEADER=${params.CuHeader ?: ''}",
+                            "PU_DEPARTMENTNAME=${params.Departmentname ?: ''}",
                             "REPORT_EMAIL=${params.EMAIL_RECIPIENTS ?: ''}",
                         ]
 

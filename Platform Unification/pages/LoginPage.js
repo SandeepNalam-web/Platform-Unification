@@ -12,8 +12,8 @@ const testData = getTestData(dataFile);
 
 this.CUname = (process.env.PU_CUNAME || testData.Cuname || '').toString().trim();
 this.Envname  = (process.env.ENVNAME || testData.Env || '').toString().trim();
-this.CuHeaderName= (process.env.CUHEADER || testData.CuHeader || '').toString().trim();
-this.DepartmentName= (process.env.DEPARTMENTNAME || testData.Departmentname || '').toString().trim();
+this.CuHeaderName= (process.env.PU_CUHEADER || testData.CuHeader || '').toString().trim();
+this.DepartmentName= (process.env.PU_DEPARTMENTNAME || testData.Departmentname || '').toString().trim();
 this.LoginEmail = LOGIN_EMAIL;
 this.page = page;
 this.baseURL= "https://platform.interface.ai/login";
