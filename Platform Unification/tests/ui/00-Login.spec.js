@@ -14,8 +14,13 @@ test.describe.serial('Login', () => {
     test.setTimeout(60000);
     const loginPage = new LoginPage(sharedPage);
     await loginPage.Login_CU_Selection();
-    await expect(loginPage.CuSelectedHeaderName).toBeVisible({ timeout: 15000 });
-    console.log(`CU "${loginPage.CUname}" selected`);
+    const headerFromEnv = (process.env.PU_CUHEADER || '').trim();
+    if (headerFromEnv) {
+      await expect(loginPage.CuSelectedHeaderName).toBeVisible({ timeout: 15000 });
+      console.log(`CU "${loginPage.CUname}" selected (header: "${loginPage.CuHeaderName}")`);
+    } else {
+      console.log(`CU "${loginPage.CUname}" selected (header check skipped — CuHeader not passed)`);
+    }
   });
 
 });
