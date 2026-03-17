@@ -140,73 +140,101 @@ class ExtentReporter {
     }
   }
 
-  _makeEmailSafe(html, reportDir) {
-    const cssVars = {
-      'var(--bg)': '#0b0e14', 'var(--surface)': '#151921', 'var(--surface2)': '#1c2130',
-      'var(--surface3)': '#232a3a', 'var(--border)': '#2a3040', 'var(--border-subtle)': '#222838',
-      'var(--text)': '#e6e8f0', 'var(--text-dim)': '#7c8298',
-      'var(--pass)': '#34d399', 'var(--pass-bg)': 'rgba(52,211,153,0.08)', 'var(--pass-glow)': 'rgba(52,211,153,0.15)',
-      'var(--fail)': '#f87171', 'var(--fail-bg)': 'rgba(248,113,113,0.08)', 'var(--fail-glow)': 'rgba(248,113,113,0.15)',
-      'var(--skip)': '#fbbf24', 'var(--skip-bg)': 'rgba(251,191,36,0.08)', 'var(--skip-glow)': 'rgba(251,191,36,0.15)',
-      'var(--warn)': '#f59e0b', 'var(--warn-bg)': 'rgba(245,158,11,0.06)', 'var(--warn-glow)': 'rgba(245,158,11,0.12)',
-      'var(--accent)': '#818cf8', 'var(--accent-bg)': 'rgba(129,140,248,0.08)',
-      'var(--radius)': '14px', 'var(--radius-sm)': '10px',
-    };
-    for (const [v, val] of Object.entries(cssVars)) {
-      html = html.split(v).join(val);
-    }
-
-    html = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-    html = html.replace(/<link[^>]*fonts\.googleapis[^>]*>/gi, '');
-
-    html = html.replace(/<details([^>]*)>/gi, '<div$1 style="display:block">');
-    html = html.replace(/<\/details>/gi, '</div>');
-    html = html.replace(/<summary([^>]*)>([\s\S]*?)<\/summary>/gi,
-      '<div$1 style="font-weight:600;margin-bottom:6px">$2</div>');
-
-    html = html.replace(/\sonclick="[^"]*"/gi, '');
-    html = html.replace(/cursor:\s*pointer;?/gi, '');
-
-    const inlineAttachments = [];
-    html = html.replace(/src="screenshots\/([^"]+)"/g, (match, fileName) => {
-      const filePath = path.join(reportDir, 'screenshots', fileName);
-      if (fs.existsSync(filePath)) {
-        const cid = `img${inlineAttachments.length}@report`;
-        inlineAttachments.push({ filename: fileName, path: filePath, cid });
-        return `src="cid:${cid}"`;
-      }
-      return match;
-    });
-
-    return { html, inlineAttachments };
-  }
-
   async _sendReportEmail(reportPath, recipients) {
     const sesFrom = 'no-reply@interface.ai';
     const sesRegion = 'us-west-2';
     const sesProfile = 'interface';
+
+    const total = this.tests.length;
+    const passed = this.tests.filter(t => t.status === 'passed').length;
+    const failed = this.tests.filter(t => t.status === 'failed').length;
+    const skipped = this.tests.filter(t => t.status === 'skipped').length;
     const cuName = process.env.CUNAME || 'N/A';
     const envName = process.env.ENVNAME || 'N/A';
+    const durationMs = (this.endTime - this.startTime) || 0;
+    const durationStr = durationMs < 60000
+      ? `${(durationMs / 1000).toFixed(1)}s`
+      : `${Math.floor(durationMs / 60000)}m ${Math.round((durationMs % 60000) / 1000)}s`;
+    const runDate = this.startTime.toLocaleString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true,
+    });
+
     const subject = `Platform Unification Report - ${cuName}/${envName}`;
+    const statusColor = failed > 0 ? '#ef4444' : '#22c55e';
+    const statusText = failed > 0 ? `${failed} Failed` : 'All Passed';
+
+    const emailBody = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
+        <div style="background: linear-gradient(135deg, #1e293b, #334155); padding: 24px 32px; border-radius: 10px 10px 0 0;">
+          <h2 style="margin: 0; color: #e2e8f0; font-size: 20px;">Platform Unification Report</h2>
+          <p style="margin: 6px 0 0; color: #94a3b8; font-size: 13px;">${runDate}</p>
+        </div>
+        <div style="background: #ffffff; padding: 24px 32px; border: 1px solid #e2e8f0; border-top: none;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr>
+              <td style="padding: 10px 0; color: #64748b;">Credit Union</td>
+              <td style="padding: 10px 0; font-weight: 600; text-align: right;">${cuName}</td>
+            </tr>
+            <tr style="border-top: 1px solid #f1f5f9;">
+              <td style="padding: 10px 0; color: #64748b;">Environment</td>
+              <td style="padding: 10px 0; font-weight: 600; text-align: right;">${envName}</td>
+            </tr>
+            <tr style="border-top: 1px solid #f1f5f9;">
+              <td style="padding: 10px 0; color: #64748b;">Duration</td>
+              <td style="padding: 10px 0; font-weight: 600; text-align: right;">${durationStr}</td>
+            </tr>
+            <tr style="border-top: 1px solid #f1f5f9;">
+              <td style="padding: 10px 0; color: #64748b;">Status</td>
+              <td style="padding: 10px 0; font-weight: 700; text-align: right; color: ${statusColor};">${statusText}</td>
+            </tr>
+          </table>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;" />
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: center;">
+            <tr>
+              <td style="padding: 12px 4px;">
+                <div style="font-size: 28px; font-weight: 700; color: #6366f1;">${total}</div>
+                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Total</div>
+              </td>
+              <td style="padding: 12px 4px;">
+                <div style="font-size: 28px; font-weight: 700; color: #22c55e;">${passed}</div>
+                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Passed</div>
+              </td>
+              <td style="padding: 12px 4px;">
+                <div style="font-size: 28px; font-weight: 700; color: #ef4444;">${failed}</div>
+                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Failed</div>
+              </td>
+              <td style="padding: 12px 4px;">
+                <div style="font-size: 28px; font-weight: 700; color: #f59e0b;">${skipped}</div>
+                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Skipped</div>
+              </td>
+            </tr>
+          </table>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;" />
+          <p style="font-size: 13px; color: #64748b; margin: 0;">
+            The detailed HTML report is attached. Open <b>${path.basename(reportPath)}</b> in a browser to view full results with screenshots.
+          </p>
+        </div>
+        <div style="background: #f8fafc; padding: 14px 32px; border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0; border-top: none;">
+          <p style="margin: 0; font-size: 11px; color: #94a3b8; text-align: center;">
+            Platform Unification &mdash; Automated Test Report
+          </p>
+        </div>
+      </div>
+    `.trim();
 
     try {
-      const reportDir = path.dirname(reportPath);
-      const rawHtml = fs.readFileSync(reportPath, 'utf-8');
-      const { html: emailHtml, inlineAttachments } = this._makeEmailSafe(rawHtml, reportDir);
-
+      const reportContent = fs.readFileSync(reportPath, 'utf-8');
       const transporter = createTransport({ streamTransport: true, buffer: true });
-
-      const attachments = [
-        ...inlineAttachments,
-        { filename: path.basename(reportPath), content: rawHtml, contentType: 'text/html' },
-      ];
 
       const info = await transporter.sendMail({
         from: sesFrom,
         to: recipients,
         subject,
-        html: emailHtml,
-        attachments,
+        html: emailBody,
+        attachments: [
+          { filename: path.basename(reportPath), content: reportContent, contentType: 'text/html' },
+        ],
       });
 
       const rawBase64 = info.message.toString('base64');
