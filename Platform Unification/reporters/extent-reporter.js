@@ -14,6 +14,11 @@ class ExtentReporter {
 
   onBegin(config, suite) {
     this.startTime = new Date();
+    this._suiteFiles = [];
+    for (const s of suite.allTests()) {
+      const f = s.location?.file || '';
+      if (f && !this._suiteFiles.includes(f)) this._suiteFiles.push(f);
+    }
   }
 
   onTestEnd(test, result) {
@@ -111,9 +116,10 @@ class ExtentReporter {
     const html = this._generateHTML();
     const cuName = process.env.PU_CUNAME || 'default';
     const envName = process.env.ENVNAME || 'default';
-    console.log(`[ExtentReporter] PU_CUNAME="${process.env.PU_CUNAME}" ENVNAME="${process.env.ENVNAME}" → report: ${cuName}/${envName}`);
+    const suiteName = this._detectSuiteName();
+    console.log(`[ExtentReporter] PU_CUNAME="${process.env.PU_CUNAME}" ENVNAME="${process.env.ENVNAME}" SUITE="${suiteName}" → report: ${cuName}/${envName}`);
     const timestamp = this.startTime.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const reportFileName = `Platform_Unification_${cuName}_${envName}_${timestamp}.html`;
+    const reportFileName = `Platform_Unification_${suiteName}_${cuName}_${envName}_${timestamp}.html`;
     const reportPath = path.join(reportDir, reportFileName);
     fs.writeFileSync(reportPath, html, 'utf-8');
 
@@ -152,6 +158,8 @@ class ExtentReporter {
     const skipped = this.tests.filter(t => t.status === 'skipped').length;
     const cuName = process.env.PU_CUNAME || 'N/A';
     const envName = process.env.ENVNAME || 'N/A';
+    const suiteName = this._detectSuiteName();
+    const suiteLabel = suiteName === 'chatai' ? 'Chat AI' : suiteName === 'voiceai' ? 'Voice AI' : 'Complete Suite';
     const durationMs = (this.endTime - this.startTime) || 0;
     const durationStr = durationMs < 60000
       ? `${(durationMs / 1000).toFixed(1)}s`
@@ -161,14 +169,14 @@ class ExtentReporter {
       hour: 'numeric', minute: '2-digit', hour12: true,
     });
 
-    const subject = `Platform Unification Report - ${cuName}/${envName}`;
+    const subject = `Platform Unification Report [${suiteLabel}] - ${cuName}/${envName}`;
     const statusColor = failed > 0 ? '#ef4444' : '#22c55e';
     const statusText = failed > 0 ? `${failed} Failed` : 'All Passed';
 
     const emailBody = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #333;">
         <div style="background: linear-gradient(135deg, #1e293b, #334155); padding: 24px 32px; border-radius: 10px 10px 0 0;">
-          <h2 style="margin: 0; color: #e2e8f0; font-size: 20px;">Platform Unification Report</h2>
+          <h2 style="margin: 0; color: #e2e8f0; font-size: 20px;">Platform Unification Report — ${suiteLabel}</h2>
           <p style="margin: 6px 0 0; color: #94a3b8; font-size: 13px;">${runDate}</p>
         </div>
         <div style="background: #ffffff; padding: 24px 32px; border: 1px solid #e2e8f0; border-top: none;">
@@ -258,6 +266,14 @@ class ExtentReporter {
     } catch (err) {
       console.error('[ExtentReporter] Failed to send email via SES:', err.message);
     }
+  }
+
+  _detectSuiteName() {
+    if (process.env.TEST_SCOPE) return process.env.TEST_SCOPE;
+    const files = (this._suiteFiles || []).join(' ');
+    if (files.includes('05-Platform') && !files.includes('06-Platform')) return 'voiceai';
+    if (files.includes('08-SmartConversion') || files.includes('06-Platform')) return 'chatai';
+    return 'ci';
   }
 
   _screenshotToDataUri(fileName) {

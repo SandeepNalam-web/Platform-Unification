@@ -69,6 +69,7 @@ pipeline {
                             "PU_CUHEADER=${params.CuHeader ?: ''}",
                             "PU_DEPARTMENTNAME=${params.Departmentname ?: ''}",
                             "REPORT_EMAIL=${params.EMAIL_RECIPIENTS ?: ''}",
+                            "TEST_SCOPE=${params.TEST_SCOPE ?: 'ci'}",
                         ]
 
                         withEnv(envVars) {
