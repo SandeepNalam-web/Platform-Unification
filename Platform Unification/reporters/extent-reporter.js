@@ -113,10 +113,11 @@ class ExtentReporter {
       }
     }
 
-    const html = this._generateHTML();
+    const suiteName = this._detectSuiteName();
+    const suiteLabel = suiteName === 'chatai' ? 'Chat AI' : suiteName === 'voiceai' ? 'Voice AI' : 'Complete Suite';
+    const html = this._generateHTML(suiteLabel);
     const cuName = process.env.PU_CUNAME || 'default';
     const envName = process.env.ENVNAME || 'default';
-    const suiteName = this._detectSuiteName();
     console.log(`[ExtentReporter] PU_CUNAME="${process.env.PU_CUNAME}" ENVNAME="${process.env.ENVNAME}" SUITE="${suiteName}" → report: ${cuName}/${envName}`);
     const timestamp = this.startTime.toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const reportFileName = `Platform_Unification_${suiteName}_${cuName}_${envName}_${timestamp}.html`;
@@ -286,7 +287,7 @@ class ExtentReporter {
     return `screenshots/${fileName}`;
   }
 
-  _generateHTML() {
+  _generateHTML(suiteLabel = 'Complete Suite') {
     const total = this.tests.length;
     const passed = this.tests.filter(t => t.status === 'passed').length;
     const failed = this.tests.filter(t => t.status === 'failed').length;
@@ -469,7 +470,7 @@ class ExtentReporter {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Platform Unification Report</title>
+<title>Platform Unification Report — ${suiteLabel}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -873,7 +874,7 @@ class ExtentReporter {
 <body>
 
 <div class="header">
-  <h1>Platform Unification Report</h1>
+  <h1>Platform Unification Report — ${suiteLabel}</h1>
   <div class="subtitle">${startStr}</div>
 </div>
 
