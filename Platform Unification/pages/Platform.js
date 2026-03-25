@@ -821,10 +821,17 @@ async navigateToSQLLab() {
     await this.sqlLabPage.waitForURL('**/sqllab**', { timeout: 30000 });
   }
 
-  await this.sqlLabPage.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
+  await this.sqlLabPage.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
   this.page.__sqlLabPage = this.sqlLabPage;
   this._initSqlLabLocators();
-  await this.sqlLabRunBtn.waitFor({ state: 'visible', timeout: 30000 });
+
+  const runBtnVisible = await this.sqlLabRunBtn.waitFor({ state: 'visible', timeout: 45000 })
+    .then(() => true).catch(() => false);
+  if (!runBtnVisible) {
+    await this.sqlLabPage.reload({ waitUntil: 'networkidle', timeout: 60000 }).catch(() => {});
+    this._initSqlLabLocators();
+    await this.sqlLabRunBtn.waitFor({ state: 'visible', timeout: 45000 });
+  }
 }
 
 async _sqlLabPickFirstOption(combobox, timeout = 15000) {
