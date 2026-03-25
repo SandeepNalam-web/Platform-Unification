@@ -292,6 +292,34 @@ class ExtentReporter {
     return `screenshots/${fileName}`;
   }
 
+  _cleanPageName(suitePath) {
+    const parts = suitePath.split(' › ').filter(Boolean);
+    return parts[parts.length - 1] || suitePath;
+  }
+
+  _getPageIcon(pageName) {
+    const n = pageName.toLowerCase();
+    if (n.includes('login'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>';
+    if (n.includes('apt'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h6"/></svg>';
+    if (n.includes('automation'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+    if (n.includes('event'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>';
+    if (n.includes('advisory'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>';
+    if (n.includes('sql'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>';
+    if (n.includes('knowledge'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>';
+    if (n.includes('platform sd') || n.includes('service'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>';
+    if (n.includes('smart') || n.includes('chat ai'))
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="10" y1="23" x2="14" y2="23"/></svg>';
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>';
+  }
+
   _generateHTML(suiteLabel = 'Complete Suite') {
     const total = this.tests.length;
     const passed = this.tests.filter(t => t.status === 'passed').length;
@@ -327,12 +355,51 @@ class ExtentReporter {
       suiteMap.get(t.suite).push(t);
     }
 
-    let suitesHTML = '';
+    let cardsHTML = '';
+    let detailsHTML = '';
+    let pageIdx = 0;
+
     for (const [suiteName, tests] of suiteMap) {
       const sp = tests.filter(t => t.status === 'passed').length;
       const sf = tests.filter(t => t.status === 'failed').length;
       const ss = tests.filter(t => t.status === 'skipped').length;
       const sw = tests.filter(t => t.status === 'passed' && t.warnings.length > 0).length;
+      const sTotal = tests.length;
+      const sDurMs = tests.reduce((s, t) => s + t.duration, 0);
+
+      const statusClass = sf > 0 ? 'status-fail' : ss > 0 && sp === 0 ? 'status-skip' : sp > 0 ? 'status-pass' : 'status-skip';
+      const pageName = this._cleanPageName(suiteName);
+      const icon = this._getPageIcon(pageName);
+      const pctP = sTotal ? ((sp / sTotal) * 100).toFixed(0) : '0';
+      const pctF = sTotal ? ((sf / sTotal) * 100).toFixed(0) : '0';
+      const pctS = sTotal ? ((ss / sTotal) * 100).toFixed(0) : '0';
+      const pid = `page-${pageIdx}`;
+
+      let statParts = [];
+      if (sp) statParts.push(`<span class="s-pass">${sp} passed</span>`);
+      if (sf) statParts.push(`<span class="s-fail">${sf} failed</span>`);
+      if (ss) statParts.push(`<span class="s-skip">${ss} skipped</span>`);
+      if (sw) statParts.push(`<span style="color:var(--warn);font-weight:600">${sw} alert${sw > 1 ? 's' : ''}</span>`);
+      const statsStr = statParts.join('<span class="dot">&middot;</span>');
+
+      cardsHTML += `<div class="page-card ${statusClass}" onclick="togglePage('${pid}')" id="card-${pid}">
+        <div class="page-card-header">
+          <div class="page-card-icon">${icon}</div>
+          <div class="page-card-info">
+            <div class="page-card-title">${this._esc(pageName)}</div>
+            <div class="page-card-stats">${statsStr}</div>
+          </div>
+        </div>
+        <div class="page-card-bar">
+          <div class="bar-seg bar-pass" style="width:${pctP}%"></div>
+          <div class="bar-seg bar-fail" style="width:${pctF}%"></div>
+          <div class="bar-seg bar-skip" style="width:${pctS}%"></div>
+        </div>
+        <div class="page-card-meta">
+          <span class="page-card-count">${sTotal} test${sTotal !== 1 ? 's' : ''}</span>
+          <span class="page-card-dur">${fmtDuration(sDurMs)}</span>
+        </div>
+      </div>`;
 
       let badges = '';
       if (sp) badges += `<span class="badge pass">${sp} passed</span>`;
@@ -456,14 +523,16 @@ class ExtentReporter {
         testsHTML += `</td></tr>`;
       }
 
-      suitesHTML += `<div class="suite-card">
-          <div class="suite-header" onclick="this.parentElement.classList.toggle('collapsed')">
-            <svg class="suite-chevron" width="14" height="14" viewBox="0 0 14 14"><path d="M5 3l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <div class="suite-title">${this._esc(suiteName)}</div>
-            <div class="suite-stats">${badges}</div>
-          </div>
-          <table class="test-table"><tbody>${testsHTML}</tbody></table>
-        </div>`;
+      detailsHTML += `<div class="page-detail" id="${pid}">
+        <div class="page-detail-header">
+          <div class="page-detail-title">${this._esc(pageName)}</div>
+          ${badges}
+          <button class="page-detail-close" onclick="event.stopPropagation();togglePage('${pid}')">&times;</button>
+        </div>
+        <table class="test-table"><tbody>${testsHTML}</tbody></table>
+      </div>`;
+
+      pageIdx++;
     }
 
     const dashOffset = parseFloat(pctPass);
@@ -629,35 +698,123 @@ class ExtentReporter {
   .info-row .info-label { color: var(--text-dim); font-weight: 400; }
   .info-row .info-value { font-weight: 500; }
 
-  /* ── Content / Suites ───────────────── */
+  /* ── Content / Page Grid ────────────── */
   .content { padding: 0 48px 48px; }
   .content h2 {
     font-size: 18px; margin-bottom: 18px; font-weight: 600;
     color: var(--text-dim); letter-spacing: -0.3px;
   }
 
-  .suite-card {
+  .page-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .page-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-left: 4px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px 18px;
+    cursor: pointer; user-select: none;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .page-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+    border-color: var(--border);
+  }
+  .page-card.status-pass { border-left-color: var(--pass); }
+  .page-card.status-pass:hover { box-shadow: 0 8px 28px var(--pass-glow); }
+  .page-card.status-fail { border-left-color: var(--fail); }
+  .page-card.status-fail:hover { box-shadow: 0 8px 28px var(--fail-glow); }
+  .page-card.status-skip { border-left-color: var(--skip); }
+  .page-card.status-skip:hover { box-shadow: 0 8px 28px var(--skip-glow); }
+  .page-card.active {
+    border-color: var(--accent);
+    border-left-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 28px rgba(129,140,248,0.15);
+    transform: translateY(-3px);
+  }
+  .page-card-header {
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .page-card-icon {
+    width: 40px; height: 40px; flex-shrink: 0;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px;
+  }
+  .page-card-icon svg { width: 24px; height: 24px; }
+  .status-pass .page-card-icon { background: var(--pass-bg); color: var(--pass); }
+  .status-pass .page-card-icon svg { stroke: var(--pass); }
+  .status-fail .page-card-icon { background: var(--fail-bg); color: var(--fail); }
+  .status-fail .page-card-icon svg { stroke: var(--fail); }
+  .status-skip .page-card-icon { background: var(--skip-bg); color: var(--skip); }
+  .status-skip .page-card-icon svg { stroke: var(--skip); }
+  .page-card-info { flex: 1; min-width: 0; }
+  .page-card-title {
+    font-size: 15px; font-weight: 600; line-height: 1.3;
+    margin-bottom: 4px; color: var(--text);
+  }
+  .page-card-stats {
+    font-size: 12px; color: var(--text-dim); display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  .page-card-stats .dot { opacity: 0.4; }
+  .page-card-stats .s-pass { color: var(--pass); font-weight: 600; }
+  .page-card-stats .s-fail { color: var(--fail); font-weight: 600; }
+  .page-card-stats .s-skip { color: var(--skip); font-weight: 600; }
+  .page-card-bar {
+    display: flex; height: 4px; border-radius: 2px; overflow: hidden;
+    background: var(--surface3); margin-top: 14px;
+  }
+  .page-card-bar .bar-seg { height: 100%; transition: width 0.4s ease; }
+  .page-card-bar .bar-pass { background: var(--pass); }
+  .page-card-bar .bar-fail { background: var(--fail); }
+  .page-card-bar .bar-skip { background: var(--skip); }
+  .page-card-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; font-size: 11px; color: var(--text-dim);
+  }
+  .page-card-count {
+    font-weight: 600; font-size: 12px;
+  }
+  .page-card-dur { font-variant-numeric: tabular-nums; }
+
+  /* ── Page Detail Panel ─────────────── */
+  .page-detail {
     background: var(--surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     overflow: hidden;
-    transition: border-color 0.2s;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
   }
-  .suite-card:hover { border-color: var(--border); }
-  .suite-header {
+  .page-detail.open {
+    max-height: 50000px;
+    opacity: 1;
+    margin-bottom: 16px;
+  }
+  .page-detail-header {
     display: flex; align-items: center; gap: 10px;
-    padding: 16px 22px; cursor: pointer; user-select: none;
-    transition: background 0.15s;
+    padding: 18px 22px; border-bottom: 1px solid var(--border-subtle);
   }
-  .suite-header:hover { background: var(--surface2); }
-  .suite-chevron {
-    color: var(--text-dim); flex-shrink: 0;
-    transition: transform 0.25s ease;
+  .page-detail-title {
+    font-weight: 700; font-size: 15px; flex: 1;
   }
-  .suite-card:not(.collapsed) .suite-chevron { transform: rotate(90deg); }
-  .suite-title { font-weight: 600; font-size: 14px; flex: 1; }
-  .suite-stats { display: flex; gap: 8px; flex-shrink: 0; }
+  .page-detail-close {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border-subtle);
+    color: var(--text-dim); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .page-detail-close:hover { background: var(--surface3); color: var(--text); }
+
   .badge {
     font-size: 11px; padding: 3px 10px; border-radius: 20px;
     font-weight: 600; letter-spacing: 0.2px;
@@ -666,7 +823,6 @@ class ExtentReporter {
   .badge.fail { background: var(--fail-bg); color: var(--fail); }
   .badge.skip { background: var(--skip-bg); color: var(--skip); }
   .badge.warn { background: var(--warn-bg); color: var(--warn); }
-  .collapsed .test-table { display: none; }
 
   /* ── Test Table ─────────────────────── */
   .test-table { width: 100%; border-collapse: collapse; }
@@ -873,6 +1029,7 @@ class ExtentReporter {
     .dashboard { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .chart-section { flex-direction: column; }
     .donut-card { min-width: unset; }
+    .page-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -934,7 +1091,8 @@ class ExtentReporter {
 
 <div class="content">
   <h2>Test Suites</h2>
-  ${suitesHTML}
+  <div class="page-grid">${cardsHTML}</div>
+  ${detailsHTML}
 </div>
 
 <div class="modal-overlay" id="imgModal" onclick="closeModal()">
@@ -947,6 +1105,20 @@ class ExtentReporter {
 </div>
 
 <script>
+function togglePage(id) {
+  const panel = document.getElementById(id);
+  const card = document.getElementById('card-' + id);
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) {
+    panel.classList.remove('open');
+    if (card) card.classList.remove('active');
+  } else {
+    panel.classList.add('open');
+    if (card) card.classList.add('active');
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
+}
 function openModal(src) {
   const overlay = document.getElementById('imgModal');
   document.getElementById('modalImg').src = src;
