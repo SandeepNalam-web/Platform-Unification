@@ -268,6 +268,7 @@ class ExtentReporter {
 
       fs.unlinkSync(tmpFile);
       console.log(`[ExtentReporter] Report emailed via SES to: ${recipients}`);
+      fs.writeFileSync(path.resolve('extent-report', '.email-sent'), `sent=${new Date().toISOString()}\nto=${recipients}\n`);
     } catch (err) {
       console.error('[ExtentReporter] Failed to send email via SES:', err.message);
     }

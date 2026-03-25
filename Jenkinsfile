@@ -88,10 +88,16 @@ pipeline {
                             def status = sh(script: cmd, returnStatus: true)
 
                             if (status != 0) {
-                                printColored("Tests completed with failures (exit code: ${status})", "\u001B[33m")
-                                unstable('Some tests failed - check the report for details')
+                                printColored("Tests completed with failures (exit code: ${status}) — check the extent report for details", "\u001B[33m")
                             } else {
                                 printColored('All tests passed', "\u001B[32m")
+                            }
+
+                            def emailSent = sh(script: 'test -f extent-report/.email-sent', returnStatus: true) == 0
+                            if (emailSent) {
+                                printColored('Extent report emailed successfully', "\u001B[32m")
+                            } else if (env.REPORT_EMAIL?.trim()) {
+                                error('Extent report email was NOT sent — marking build as failed')
                             }
                         }
                     }
