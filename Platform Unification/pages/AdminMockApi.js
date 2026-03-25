@@ -9,8 +9,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const dataFile = path.resolve('./data/testData.xlsx');
 const testData = getTestData(dataFile);
-const CU_NAME = (testData.Cuname || 'platformv5').toString().trim();
-const ENV_NAME = (testData.Env || 'dev').toString().trim().toLowerCase();
+const CU_NAME = (process.env.PU_CUNAME || testData.Cuname || 'platformv5').toString().trim();
+const ENV_NAME = (process.env.ENVNAME || testData.Env || 'dev').toString().trim().toLowerCase();
 const MOCK_API_URL_AICC = `https://${CU_NAME}-aicc-${ENV_NAME}-bot.interface.ai/admin/mock`;
 const MOCK_API_URL_AACU = `https://${CU_NAME}-${ENV_NAME}-bot.interface.ai/admin/mock`;
 

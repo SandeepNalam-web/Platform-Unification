@@ -10,11 +10,11 @@ class PlatformSD{
         const dataFile = path.resolve('./data/testData.xlsx');
         const testData = getTestData(dataFile);
 
-        this.CUname = testData.Cuname;
-        this.Envname = testData.Env;
+        this.CUname = (process.env.PU_CUNAME || testData.Cuname || '').toString().trim();
+        this.Envname = (process.env.ENVNAME || testData.Env || '').toString().trim();
         this.page = page;
         this.baseURL = "https://platform.interface.ai/login";
-        this.CuHeaderName = testData.CuHeader;
+        this.CuHeaderName = (process.env.PU_CUHEADER || testData.CuHeader || '').toString().trim();
 
         // Locators
         this.SDSelection = this.page.locator(`//div[h2[text()="Chat AI"]]/following-sibling::div//p[text()="${this.Envname}"]`);

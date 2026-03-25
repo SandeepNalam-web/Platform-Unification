@@ -8,8 +8,8 @@ class KnowledgeManager {
         const dataFile = path.resolve('./data/testData.xlsx');
         const testData = getTestData(dataFile);
 
-        this.CUname = (testData.Cuname || '').toString().trim();
-        this.Envname = (testData.Env || '').toString().trim();
+        this.CUname = (process.env.PU_CUNAME || testData.Cuname || '').toString().trim();
+        this.Envname = (process.env.ENVNAME || testData.Env || '').toString().trim();
         this.page = page;
 
         // Constants

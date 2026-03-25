@@ -10,11 +10,11 @@ class Platform{
         const dataFile = path.resolve('./data/testData.xlsx');
         const testData = getTestData(dataFile);
 
-this.CUname = testData.Cuname ;
-this.Envname  = testData.Env;
+this.CUname = (process.env.PU_CUNAME || testData.Cuname || '').toString().trim();
+this.Envname  = (process.env.ENVNAME || testData.Env || '').toString().trim();
 this.page = page;
 this.baseURL= "https://platform.interface.ai/login";
-this.CuHeaderName= testData.CuHeader;
+this.CuHeaderName= (process.env.PU_CUHEADER || testData.CuHeader || '').toString().trim();
 
 //Buttons
 this.AIPBSelection = this.page.locator(`//div[h2[text()="Voice AI"]]/following-sibling::div//p[translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="${this.Envname.toLowerCase()}"]`);
@@ -28,9 +28,10 @@ this.RecentConversationsList = this.page.locator("//div[text()='Recent']");
 this.ViewConversationBtn = this.page.locator("//span[text()='View Conversations']");
 this.RecentConversations = this.page.locator("//div[text()='Recent Conversations']");
 this.AnalyzedConversations = this.page.locator("//div[@data-node-key='analyzed_conversations']");
-this.ExpNameFilter = this.page.locator("//div[@class='SearchWithFilter_filterOptionsOpen__35afl']//div[3]//input");
-// Ant-select combobox scoped to the experience filter (3rd div in filter options)
-this.ExpNameCombobox = this.page.locator("//div[@class='SearchWithFilter_filterOptionsOpen__35afl']//div[3]").locator('input.ant-select-selection-search-input[role="combobox"]');
+this.ExpNameFilter = this.page.locator('.SearchWithFilter_filterOptionsOpen__35afl .ant-select')
+    .filter({ hasText: 'Select Experience' }).locator('input');
+this.ExpNameCombobox = this.page.locator('.SearchWithFilter_filterOptionsOpen__35afl .ant-select')
+    .filter({ hasText: 'Select Experience' }).locator('input[role="combobox"]');
 this.ExpList = this.page.locator(".rc-virtual-list-holder-inner");
 this.ExpSelection = this.page.locator("//div[text()='Routing Number']");
 this.SearchConversationsBtn = this.page.locator(".ConversationDetail_conversationSearchContainer__3Q51-");
@@ -248,7 +249,9 @@ async EventManagerforPreviousDateDisabled(){
     await this.NewEventButton.click();
     await this.EventName.fill("Test Event");
     await this.HolidayMessageEnglish.fill("We are testing Event Manager");
-    await this.HolidayMessageSpanish.fill("We are testing Event Manager");
+    if (await this.HolidayMessageSpanish.isVisible().catch(() => false)) {
+        await this.HolidayMessageSpanish.fill("We are testing Event Manager");
+    }
     await this.HolidayDateRange.click();
 }
 async EventManagerNewEventCreation(){
@@ -279,7 +282,9 @@ async EventManagerNewEventCreation(){
     await this.NewEventButton.click();
     await this.EventName.fill("Test Event Manager");
     await this.HolidayMessageEnglish.fill("We are testing Event Manager");
-    await this.HolidayMessageSpanish.fill("We are testing Event Manager");
+    if (await this.HolidayMessageSpanish.isVisible().catch(() => false)) {
+        await this.HolidayMessageSpanish.fill("We are testing Event Manager");
+    }
     await this.HolidayDateRange.click();
     await this.TodaysDateinDatePicker.click();
     await this.OkButtoninDatePicker.click();
@@ -304,7 +309,9 @@ async DuplicateEventCreation(){
     await this.NewEventButton.click();
     await this.EventName.fill("Test Event Manager");
     await this.HolidayMessageEnglish.fill("We are testing Event Manager");
-    await this.HolidayMessageSpanish.fill("We are testing Event Manager");
+    if (await this.HolidayMessageSpanish.isVisible().catch(() => false)) {
+        await this.HolidayMessageSpanish.fill("We are testing Event Manager");
+    }
     await this.HolidayDateRange.click();
     await this.TodaysDateinDatePicker.click();
     await this.OkButtoninDatePicker.click();
@@ -820,6 +827,17 @@ async navigateToSQLLab() {
   await this.sqlLabRunBtn.waitFor({ state: 'visible', timeout: 30000 });
 }
 
+async _sqlLabPickFirstOption(combobox, timeout = 15000) {
+  const p = this.sqlLabPage;
+  await combobox.click();
+  const firstOption = p.locator('.ant-select-dropdown .ant-select-item-option').first();
+  await firstOption.waitFor({ state: 'visible', timeout });
+  const text = (await firstOption.innerText()).trim();
+  await firstOption.dispatchEvent('click');
+  await p.waitForTimeout(1000);
+  return text;
+}
+
 async sqlLabEnsureDatabaseSelected() {
   const p = this.sqlLabPage;
   await this.sqlLabDbDropdown.waitFor({ state: 'visible', timeout: 15000 });
@@ -828,13 +846,9 @@ async sqlLabEnsureDatabaseSelected() {
     wrapperText.trim() === 'Select database or type to search databases';
   if (isPlaceholderOnly) {
     const combobox = this.sqlLabDbDropdown.getByRole('combobox');
-    await combobox.click();
-    await p.waitForTimeout(1000);
-    const firstOption = p.getByRole('option').first();
-    await firstOption.waitFor({ state: 'attached', timeout: 10000 });
-    await firstOption.evaluate(el => el.click());
-    await p.waitForTimeout(1000);
+    await this._sqlLabPickFirstOption(combobox, 10000);
   }
+  await p.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   return (await this.sqlLabDbDropdown.innerText()).trim();
 }
 
@@ -846,13 +860,23 @@ async sqlLabEnsureSchemaSelected() {
     wrapperText.trim() === 'Select schema or type to search schemas';
   if (isPlaceholderOnly) {
     const combobox = this.sqlLabSchemaDropdown.getByRole('combobox');
-    await combobox.click();
-    await p.waitForTimeout(1000);
-    const firstOption = p.getByRole('option').first();
-    await firstOption.waitFor({ state: 'attached', timeout: 10000 });
-    await firstOption.evaluate(el => el.click());
-    await p.waitForTimeout(1000);
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await this._sqlLabPickFirstOption(combobox, 10000);
+        break;
+      } catch {
+        if (attempt < maxRetries) {
+          await p.keyboard.press('Escape');
+          await p.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+          await p.waitForTimeout(1000);
+        } else {
+          throw new Error('Schema dropdown options did not appear after ' + maxRetries + ' attempts');
+        }
+      }
+    }
   }
+  await p.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
   return (await this.sqlLabSchemaDropdown.innerText()).trim();
 }
 
@@ -861,13 +885,7 @@ async sqlLabSelectFirstTable() {
   await p.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
   await this.sqlLabTableDropdown.waitFor({ state: 'visible', timeout: 15000 });
   const combobox = this.sqlLabTableDropdown.getByRole('combobox');
-  await combobox.click();
-  await p.waitForTimeout(1000);
-  const firstOption = p.getByRole('option').first();
-  await firstOption.waitFor({ state: 'attached', timeout: 10000 });
-  const tableName = (await firstOption.innerText()).trim();
-  await firstOption.evaluate(el => el.click());
-  await p.waitForTimeout(500);
+  const tableName = await this._sqlLabPickFirstOption(combobox, 15000);
   return tableName;
 }
 

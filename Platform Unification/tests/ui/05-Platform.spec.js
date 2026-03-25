@@ -2,23 +2,19 @@ import { test, expect } from '../fixtures/persistent-shared.js';
 import Platform from '../../pages/Platform.js';
 import { callAdminMockApiWithPhone } from '../../pages/AdminMockApi.js';
 
-test.describe.serial('Post Requisite', async () => {
-    test.describe.serial('Login Test', () => {
-        // Runs first in a fresh context (no saved session) so login page is shown
-        test('Unregistered Email ID check', async ({ freshPage }) => {
-            test.setTimeout(180000);
-            const platformpage = new Platform(freshPage);
-            await platformpage.UnregisteredEmailIDCheck();
-            await expect(platformpage.UnregisteredEmailError).toBeVisible();
-        });
-
-        // Runs second; performs login and stores session in persistent context for remaining tests
+test.describe.serial('Login Test', () => {
+    test('Unregistered Email ID check', async ({ freshPage }) => {
+        test.setTimeout(180000);
+        const platformpage = new Platform(freshPage);
+        await platformpage.UnregisteredEmailIDCheck();
+        await expect(platformpage.UnregisteredEmailError).toBeVisible();
     });
+});
+
+test.describe.serial('APT Tests', () => {
     test('APT: Recent Conversations and Analyzed Conversations check', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
-        // Login + CU selection when needed, then AIPB/APT; skips CU step if already on app-select
         await platformpage.loginAndSelectAIPBAndAPT();
-        // await expect(platformpage.APT).toBeVisible();
         await expect(platformpage.RecentConversations).toBeVisible();
         await expect(platformpage.RecentConversations).toHaveAttribute('aria-selected', 'true');
         await expect(platformpage.AnalyzedConversations).toBeVisible();
@@ -40,11 +36,13 @@ test.describe.serial('Post Requisite', async () => {
         const RightPaneFromPhone = (await platformpage.FromPhoneRightPane.textContent() ?? '').trim();
         expect(LeftPaneFromPhone).toEqual(RightPaneFromPhone);
 
-        // Call Admin Mock API with same fromPhone as left/right pane; hard assert phone number match
         const { fromPhoneUsed } = await callAdminMockApiWithPhone(LeftPaneFromPhone);
         expect(fromPhoneUsed).toBe(LeftPaneFromPhone);
         expect(fromPhoneUsed).toBe(RightPaneFromPhone);
     });
+});
+
+test.describe.serial('Automation Tests', () => {
     test('Automation: Automation Selection', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
         await platformpage.AutomationForLastMonth();
@@ -77,6 +75,9 @@ test.describe.serial('Post Requisite', async () => {
         }
         expect(totalcalls).toBeGreaterThan(0);
     });
+});
+
+test.describe.serial('Event Manager Tests', () => {
     test('Event Manager: Previous Date Disabled', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
         await platformpage.EventManagerforPreviousDateDisabled();
@@ -121,6 +122,9 @@ test.describe.serial('Post Requisite', async () => {
         console.log(`After delete: EventGone=${eventGone}`);
         expect(eventGone).toBeTruthy();
     });
+});
+
+test.describe.serial('Advisory Tests', () => {
     test('Advisory: Selection', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
         await platformpage.AdvisorySelection();
@@ -419,9 +423,9 @@ test.describe.serial('Post Requisite', async () => {
         await platformpage.AdvisoryNavigateBackToAIPB();
         await expect(platformpage.AdvisoryAIPBLink).toBeVisible();
     });
+});
 
-    // ─── SQL Lab ────────────────────────────────────────────────────────
-
+test.describe.serial('SQL Lab Tests', () => {
     test('SQL Lab: Save Query', async ({ sharedPage }) => {
         test.setTimeout(120000);
         const platformpage = new Platform(sharedPage);
@@ -448,7 +452,6 @@ test.describe.serial('Post Requisite', async () => {
         await expect(saveAlert).toBeVisible();
         console.log(`Query saved as: ${uniqueName}`);
 
-        // Store query info for subsequent tests
         sharedPage.__sqlLabQueryName = uniqueName;
         sharedPage.__sqlLabQuery = query;
     });
@@ -484,4 +487,3 @@ test.describe.serial('Post Requisite', async () => {
         console.log(`Search for "${queryName}" — rows: ${rowCount}, No Data: ${hasNoData}`);
     });
 });
-

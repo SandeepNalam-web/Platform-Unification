@@ -101,9 +101,18 @@ class ExtentReporter {
 
   async onEnd(result) {
     this.endTime = new Date();
-    const reportDir = path.resolve('extent-report');
-    const ssDir = path.join(reportDir, 'screenshots');
+
+    const suiteName = this._detectSuiteName();
+    const suiteLabel = suiteName === 'chatai' ? 'Chat AI' : suiteName === 'voiceai' ? 'Voice AI' : 'Complete Suite';
+    const cuName = process.env.PU_CUNAME || 'default';
+    const envName = process.env.ENVNAME || 'default';
+    const safeSuiteLabel = suiteLabel.replace(/\s+/g, '_');
+    const timestamp = this.startTime.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+    const reportDir = path.resolve('extent-report', cuName, safeSuiteLabel);
+    const ssDir = path.join(reportDir, `screenshots_${timestamp}`);
     fs.mkdirSync(ssDir, { recursive: true });
+    this._ssDir = ssDir;
 
     for (const t of this.tests) {
       for (const s of [...t.screenshots, ...t.alertScreenshots]) {
@@ -113,14 +122,9 @@ class ExtentReporter {
       }
     }
 
-    const suiteName = this._detectSuiteName();
-    const suiteLabel = suiteName === 'chatai' ? 'Chat AI' : suiteName === 'voiceai' ? 'Voice AI' : 'Complete Suite';
+    console.log(`[ExtentReporter] PU_CUNAME="${process.env.PU_CUNAME}" ENVNAME="${process.env.ENVNAME}" SUITE="${suiteName}" → report: ${cuName}/${safeSuiteLabel}`);
     const html = this._generateHTML(suiteLabel);
-    const cuName = process.env.PU_CUNAME || 'default';
-    const envName = process.env.ENVNAME || 'default';
-    console.log(`[ExtentReporter] PU_CUNAME="${process.env.PU_CUNAME}" ENVNAME="${process.env.ENVNAME}" SUITE="${suiteName}" → report: ${cuName}/${envName}`);
-    const timestamp = this.startTime.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const reportFileName = `Platform_Unification_${suiteName}_${cuName}_${envName}_${timestamp}.html`;
+    const reportFileName = `${cuName}_${safeSuiteLabel}_${envName}_${timestamp}.html`;
     const reportPath = path.join(reportDir, reportFileName);
     fs.writeFileSync(reportPath, html, 'utf-8');
 
@@ -278,7 +282,7 @@ class ExtentReporter {
   }
 
   _screenshotToDataUri(fileName) {
-    const ssDir = path.resolve('extent-report', 'screenshots');
+    const ssDir = this._ssDir || path.resolve('extent-report', 'screenshots');
     const filePath = path.join(ssDir, fileName);
     if (fs.existsSync(filePath)) {
       const base64 = fs.readFileSync(filePath).toString('base64');
