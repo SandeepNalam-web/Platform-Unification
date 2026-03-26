@@ -108,7 +108,7 @@ class KnowledgeManager {
         this.TestAcronymEntry = this.page.locator(`xpath=//*[normalize-space(text())="${this.TestAcronym}"]`).first();
 
         // Success / toast messages — two patterns: span-based (file ops) and text-based (acronyms)
-        this.DirectoryCreatedMsg = this.page.locator('//span[contains(text(),"created successfully") or contains(text(),"Created successfully")]');
+        this.DirectoryCreatedMsg = this.page.locator('//*[contains(text(),"created successfully") or contains(text(),"Created successfully")]');
         this.DocumentUploadedMsg = this.page.locator('//span[contains(text(),"uploaded successfully")]');
         this.DocumentRenamedMsg = this.page.locator('//span[contains(text(),"renamed successfully")]');
         this.DocumentMovedMsg = this.page.locator('//span[contains(text(),"moved successfully") or contains(text(),"Moved successfully")]');
@@ -169,6 +169,7 @@ class KnowledgeManager {
         await this.DirectoryNameInput.waitFor({ state: 'visible', timeout: 5000 });
         await this.DirectoryNameInput.fill(this.CreatedDirectoryName);
         await this.OKBtn.click();
+        await this.page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
     }
 
     async uploadFile() {

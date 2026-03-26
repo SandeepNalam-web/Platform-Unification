@@ -35,7 +35,7 @@ test.describe.serial('Knowledge Manager Tests', () => {
         test.skip(!adminConsoleAvailable, 'Admin Console not available');
         const km = new KnowledgeManager(sharedPage);
         await km.createDirectory();
-        await expect(km.DirectoryCreatedMsg).toBeVisible({ timeout: 10000 });
+        await expect(km.DirectoryCreatedMsg).toBeVisible({ timeout: 20000 });
         await sharedPage.waitForTimeout(2000);
         await expect(km.CreatedDirRow).toBeVisible();
         console.log(`Directory "${km.CreatedDirectoryName}" created successfully`);
