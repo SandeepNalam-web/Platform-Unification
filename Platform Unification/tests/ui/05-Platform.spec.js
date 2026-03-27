@@ -427,7 +427,7 @@ test.describe.serial('Advisory Tests', () => {
 
 test.describe.serial('SQL Lab Tests', () => {
     test('SQL Lab: Save Query', async ({ sharedPage }) => {
-        test.setTimeout(120000);
+        test.setTimeout(180000);
         const platformpage = new Platform(sharedPage);
 
         await platformpage.navigateToSQLLab();

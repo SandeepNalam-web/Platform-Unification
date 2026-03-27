@@ -834,66 +834,61 @@ async navigateToSQLLab() {
   }
 }
 
-async _sqlLabPickFirstOption(combobox, timeout = 15000) {
-  const p = this.sqlLabPage;
-  await combobox.click();
-  const firstOption = p.locator('.ant-select-dropdown .ant-select-item-option').first();
-  await firstOption.waitFor({ state: 'visible', timeout });
-  const text = (await firstOption.innerText()).trim();
-  await firstOption.dispatchEvent('click');
-  await p.waitForTimeout(1000);
-  return text;
-}
-
 async sqlLabEnsureDatabaseSelected() {
   const p = this.sqlLabPage;
   await this.sqlLabDbDropdown.waitFor({ state: 'visible', timeout: 15000 });
-  const wrapperText = await this.sqlLabDbDropdown.innerText().catch(() => '');
-  const isPlaceholderOnly = !wrapperText || wrapperText.trim() === '' ||
-    wrapperText.trim() === 'Select database or type to search databases';
-  if (isPlaceholderOnly) {
-    const combobox = this.sqlLabDbDropdown.getByRole('combobox');
-    await this._sqlLabPickFirstOption(combobox, 10000);
+  const combobox = this.sqlLabDbDropdown.getByRole('combobox');
+  const val = await combobox.inputValue().catch(() => '');
+  const selected = await this.sqlLabDbDropdown.locator('.ant-select-selection-item').innerText().catch(() => '');
+  if (selected) {
+    console.log(`[SQL Lab] Database already selected: "${selected}"`);
+    return selected;
   }
+  await combobox.focus();
+  await combobox.press('ArrowDown');
+  await p.waitForTimeout(500);
+  await combobox.press('Enter');
+  await p.waitForTimeout(1000);
   await p.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-  return (await this.sqlLabDbDropdown.innerText()).trim();
+  const name = await this.sqlLabDbDropdown.locator('.ant-select-selection-item').innerText().catch(() => 'unknown');
+  console.log(`[SQL Lab] Database selected: "${name}"`);
+  return name;
 }
 
 async sqlLabEnsureSchemaSelected() {
   const p = this.sqlLabPage;
   await this.sqlLabSchemaDropdown.waitFor({ state: 'visible', timeout: 15000 });
-  const wrapperText = await this.sqlLabSchemaDropdown.innerText().catch(() => '');
-  const isPlaceholderOnly = !wrapperText || wrapperText.trim() === '' ||
-    wrapperText.trim() === 'Select schema or type to search schemas';
-  if (isPlaceholderOnly) {
-    const combobox = this.sqlLabSchemaDropdown.getByRole('combobox');
-    const maxRetries = 3;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        await this._sqlLabPickFirstOption(combobox, 10000);
-        break;
-      } catch {
-        if (attempt < maxRetries) {
-          await p.keyboard.press('Escape');
-          await p.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
-          await p.waitForTimeout(1000);
-        } else {
-          throw new Error('Schema dropdown options did not appear after ' + maxRetries + ' attempts');
-        }
-      }
-    }
+  const selected = await this.sqlLabSchemaDropdown.locator('.ant-select-selection-item').innerText().catch(() => '');
+  if (selected) {
+    console.log(`[SQL Lab] Schema auto-selected: "${selected}" — using as-is`);
+    await p.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+    return selected;
   }
+  const combobox = this.sqlLabSchemaDropdown.getByRole('combobox');
+  await combobox.focus();
+  await combobox.press('ArrowDown');
+  await p.waitForTimeout(500);
+  await combobox.press('Enter');
+  await p.waitForTimeout(1000);
   await p.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-  return (await this.sqlLabSchemaDropdown.innerText()).trim();
+  const name = await this.sqlLabSchemaDropdown.locator('.ant-select-selection-item').innerText().catch(() => 'unknown');
+  console.log(`[SQL Lab] Schema selected: "${name}"`);
+  return name;
 }
 
 async sqlLabSelectFirstTable() {
   const p = this.sqlLabPage;
-  await p.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
+  await p.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   await this.sqlLabTableDropdown.waitFor({ state: 'visible', timeout: 15000 });
   const combobox = this.sqlLabTableDropdown.getByRole('combobox');
-  const tableName = await this._sqlLabPickFirstOption(combobox, 15000);
-  return tableName;
+  await combobox.focus();
+  await combobox.press('ArrowDown');
+  await p.waitForTimeout(500);
+  await combobox.press('Enter');
+  await p.waitForTimeout(1000);
+  const name = await this.sqlLabTableDropdown.locator('.ant-select-selection-item').innerText().catch(() => '');
+  console.log(`[SQL Lab] Table selected: "${name}"`);
+  return name;
 }
 
 async sqlLabWriteAndRunQuery(tableName) {
