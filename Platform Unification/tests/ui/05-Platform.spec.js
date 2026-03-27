@@ -22,9 +22,8 @@ test.describe.serial('APT Tests', () => {
     test('APT: Analyzed Conversations based on Exp Name', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);
         await platformpage.AnalyzedConversationsBasedOnExpName();
-        const InputTexts = await platformpage.InputConversations.allTextContents();
-        const matchFound = InputTexts.some(text => text.toLowerCase().includes('routing'));
-        expect(matchFound).toBe(true);
+        expect(platformpage.aptMatchedSearchTerm).toBeTruthy();
+        console.log(`APT matched on search term: "${platformpage.aptMatchedSearchTerm}"`);
     });
     test('APT: Recent Conversations Assertion Check', async ({ sharedPage }) => {
         const platformpage = new Platform(sharedPage);

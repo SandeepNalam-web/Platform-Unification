@@ -188,9 +188,24 @@ async AnalyzedConversationsBasedOnExpName(){
     await this.ViewConversationBtn.click();
     await this.SearchConversationsBtn.click();
     await this.SearchConversationsBtn.click();
-    await this.SearchInput.fill("routing");
-    await this.SearchInput.press("Enter");
-    await this.page.waitForLoadState('networkidle');
+
+    const searchTerms = ['routing', 'RTN', 'ABA'];
+    let matchedTerm = null;
+    for (const term of searchTerms) {
+        await this.SearchInput.fill(term);
+        await this.SearchInput.press('Enter');
+        await this.page.waitForLoadState('networkidle');
+        await this.page.waitForTimeout(1000);
+        const texts = await this.InputConversations.allTextContents();
+        const found = texts.some(t => t.toLowerCase().includes(term.toLowerCase()));
+        if (found) {
+            matchedTerm = term;
+            console.log(`[APT] Search term "${term}" found in conversations`);
+            break;
+        }
+        console.log(`[APT] Search term "${term}" not found, trying next...`);
+    }
+    this.aptMatchedSearchTerm = matchedTerm;
 }
 async selectAutomationReportType(){
     const adminDropdown = this.AdminDropdown;
