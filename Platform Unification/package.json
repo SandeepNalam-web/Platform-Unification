@@ -11,8 +11,8 @@
   "scripts": {
     "test": "npx playwright test && npx playwright show-report --export=combined-report.html",
     "preclear": "node -e \"import fs from 'fs'; const d='auth/sso-session'; fs.rmSync(d,{recursive:true,force:true}); fs.mkdirSync(d,{recursive:true}); console.log('Session cleared');\"",
-    "test:chatai": "npm run preclear && npx playwright test tests/ui/00-Login.spec.js tests/ui/06-PlatformSD.spec.js tests/ui/07-KnowledgeManager.spec.js tests/ui/08-SmartConversionAdvisory.spec.js --reporter=list,./reporters/extent-reporter.js",
-    "test:voiceai": "npm run preclear && npx playwright test tests/ui/00-Login.spec.js tests/ui/05-Platform.spec.js --reporter=list,./reporters/extent-reporter.js",
+    "test:chatai": "npm run preclear && npx playwright test tests/ui/00-Login.spec.js tests/ui/06-PlatformSD.spec.js tests/ui/07-KnowledgeManager.spec.js tests/ui/08-SmartConversionAdvisory.spec.js --max-failures=1 --reporter=list,./reporters/extent-reporter.js",
+    "test:voiceai": "npm run preclear && npx playwright test tests/ui/00-Login.spec.js tests/ui/05-Platform.spec.js --max-failures=1 --reporter=list,./reporters/extent-reporter.js",
     "test:ci": "npx playwright test --reporter=list,./reporters/extent-reporter.js",
     "playwright:install": "node node_modules/@playwright/test/cli.js install"
   }

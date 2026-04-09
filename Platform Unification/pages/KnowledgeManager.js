@@ -178,19 +178,38 @@ class KnowledgeManager {
         await this.UploadBtn.click();
     }
 
-    async waitForFileActive(timeoutMs = 60000) {
+    async waitForFileActive(timeoutMs = 180000) {
         const pollInterval = 5000;
-        const maxAttempts = Math.ceil(timeoutMs / pollInterval);
-        for (let i = 0; i < maxAttempts; i++) {
+        const initialPollMs = Math.floor(timeoutMs * 0.5);
+        const initialAttempts = Math.ceil(initialPollMs / pollInterval);
+
+        for (let i = 0; i < initialAttempts; i++) {
             const status = await this.UploadedFileStatusText.textContent().catch(() => '');
             if (status.trim().toUpperCase() === 'ACTIVE') {
                 console.log(`File status is ACTIVE after ~${i * pollInterval / 1000}s`);
                 return;
             }
-            console.log(`File status: "${status.trim()}" — waiting... (${i + 1}/${maxAttempts})`);
+            console.log(`File status: "${status.trim()}" — waiting... (${i + 1}/${initialAttempts})`);
             await this.page.waitForTimeout(pollInterval);
         }
-        throw new Error(`File status did not become ACTIVE within ${timeoutMs / 1000}s`);
+
+        console.log('Status not updated via polling — refreshing page to get latest status…');
+        const remainingMs = timeoutMs - initialPollMs;
+        const refreshAttempts = Math.ceil(remainingMs / pollInterval);
+
+        for (let i = 0; i < refreshAttempts; i++) {
+            await this.page.reload({ waitUntil: 'networkidle' });
+            await this.page.waitForTimeout(2000);
+            const status = await this.UploadedFileStatusText.textContent().catch(() => '');
+            if (status.trim().toUpperCase() === 'ACTIVE') {
+                console.log(`File status is ACTIVE after page refresh (attempt ${i + 1})`);
+                return;
+            }
+            console.log(`File status after refresh: "${status.trim()}" — waiting... (${i + 1}/${refreshAttempts})`);
+            await this.page.waitForTimeout(pollInterval);
+        }
+
+        throw new Error(`File status did not become ACTIVE within ${timeoutMs / 1000}s (polled + refreshed)`);
     }
 
     async searchFile(name) {

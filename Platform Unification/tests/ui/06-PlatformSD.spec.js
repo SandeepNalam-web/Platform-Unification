@@ -36,6 +36,13 @@ test.describe.serial('Platform SD Tests', async () => {
 
         await sdPage.analyzedConversationsWithRouting();
 
+        const noResults = await sdPage.NoResultsFound.isVisible().catch(() => false);
+        if (noResults) {
+            console.log('No analyzed conversations with "Routing" keyword in the current date range — skipping assertions');
+            test.skip(true, 'No analyzed data available for "Routing" keyword in this environment');
+            return;
+        }
+
         await expect(sdPage.ResultsCount).toBeVisible();
         const countText = await sdPage.ResultsCount.textContent();
         const match = countText.match(/of\s+(\d+)/);

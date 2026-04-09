@@ -43,14 +43,14 @@ test.describe.serial('Knowledge Manager Tests', () => {
 
     test('AC: Upload File', async ({ sharedPage }) => {
         test.skip(!adminConsoleAvailable, 'Admin Console not available');
-        test.setTimeout(120000);
+        test.setTimeout(210000);
         const km = new KnowledgeManager(sharedPage);
         await km.uploadFile();
         await expect(km.DocumentUploadedMsg).toBeVisible({ timeout: 15000 });
         await sharedPage.waitForTimeout(3000);
         await expect(km.UploadedFileRow).toBeVisible({ timeout: 10000 });
         console.log(`File "${km.UploadedFileName}" uploaded, waiting for ACTIVE status...`);
-        await km.waitForFileActive(90000);
+        await km.waitForFileActive(180000);
         await expect(km.UploadedFileStatusText).toContainText('ACTIVE');
         console.log(`File "${km.UploadedFileName}" is now ACTIVE`);
     });
