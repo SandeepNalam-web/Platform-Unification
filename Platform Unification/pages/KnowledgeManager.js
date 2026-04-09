@@ -187,7 +187,7 @@ class KnowledgeManager {
             const status = await this.UploadedFileStatusText.textContent().catch(() => '');
             if (status.trim().toUpperCase() === 'ACTIVE') {
                 console.log(`File status is ACTIVE after ~${i * pollInterval / 1000}s`);
-                return;
+                return { neededRefresh: false };
             }
             console.log(`File status: "${status.trim()}" — waiting... (${i + 1}/${initialAttempts})`);
             await this.page.waitForTimeout(pollInterval);
@@ -203,7 +203,7 @@ class KnowledgeManager {
             const status = await this.UploadedFileStatusText.textContent().catch(() => '');
             if (status.trim().toUpperCase() === 'ACTIVE') {
                 console.log(`File status is ACTIVE after page refresh (attempt ${i + 1})`);
-                return;
+                return { neededRefresh: true, refreshAttempt: i + 1 };
             }
             console.log(`File status after refresh: "${status.trim()}" — waiting... (${i + 1}/${refreshAttempts})`);
             await this.page.waitForTimeout(pollInterval);

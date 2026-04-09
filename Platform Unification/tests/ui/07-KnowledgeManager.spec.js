@@ -50,8 +50,13 @@ test.describe.serial('Knowledge Manager Tests', () => {
         await sharedPage.waitForTimeout(3000);
         await expect(km.UploadedFileRow).toBeVisible({ timeout: 10000 });
         console.log(`File "${km.UploadedFileName}" uploaded, waiting for ACTIVE status...`);
-        await km.waitForFileActive(180000);
+        const { neededRefresh, refreshAttempt } = await km.waitForFileActive(180000);
         await expect(km.UploadedFileStatusText).toContainText('ACTIVE');
+        if (neededRefresh) {
+            const msg = `File status appeared only after page refresh (refresh attempt ${refreshAttempt}) — UI did not update automatically via polling`;
+            console.log(`ALERT: ${msg}`);
+            test.info().annotations.push({ type: 'warning', description: msg });
+        }
         console.log(`File "${km.UploadedFileName}" is now ACTIVE`);
     });
 
